@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -271,6 +271,19 @@
           
           .search-results div:hover {
             background-color: #f5f5f5;
+          }
+          
+          .info {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+          }
+          
+          .info h4 {
+            margin: 0 0 5px;
+            color: #2A6FBB;
+            font-size: 16px;
           }
           
           .population-legend {
@@ -608,10 +621,13 @@
           if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
             layer.bringToFront();
           }
+          
+          info.update(layer.feature.properties);
         }
         
         function resetHighlight(e) {
           geojsonLayer.resetStyle(e.target);
+          info.update();
         }
         
         function zoomToFeature(e) {
@@ -635,6 +651,43 @@
         // Fit map to bounds of all features
         populationMap.fitBounds(geojsonLayer.getBounds());
         
+        // Add info control
+        const info = L.control();
+        
+        info.onAdd = function(map) {
+          this._div = L.DomUtil.create('div', 'info');
+          this.update();
+          return this._div;
+        };
+        
+        info.update = function(props) {
+          let title, valueLabel;
+          
+          switch(currentDataType) {
+            case 'idps':
+              title = 'IDP Distribution';
+              valueLabel = 'IDPs';
+              break;
+            case 'returnees':
+              title = 'Returnee Distribution';
+              valueLabel = 'Returnees';
+              break;
+            case 'foreign_nationals':
+              title = 'Foreign Nationals Distribution';
+              valueLabel = 'Foreign Nationals';
+              break;
+          }
+          
+          this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
+            (props ? 
+              `<b>${props.state}</b><br />` + 
+              (props[`total_${currentDataType}`] || 0).toLocaleString() + 
+              ` ${valueLabel}` : 
+              'Hover over a state');
+        };
+        
+        info.addTo(populationMap);
+        
         // Function to update map display based on selected data type
         function updateMapDisplay(dataType) {
           currentDataType = dataType;
@@ -645,7 +698,7 @@
             legend.addTo(populationMap);
           }
           
-          // Update the style
+          // Update the style and info display
           geojsonLayer.setStyle(feature => {
             const value = feature.properties[`total_${dataType}`] || 0;
             return {
@@ -657,6 +710,36 @@
               fillOpacity: 0.7
             };
           });
+          
+          // Update the info control function
+          info.update = function(props) {
+            let title, valueLabel;
+            
+            switch(dataType) {
+              case 'idps':
+                title = 'IDP Distribution';
+                valueLabel = 'IDPs';
+                break;
+              case 'returnees':
+                title = 'Returnee Distribution';
+                valueLabel = 'Returnees';
+                break;
+              case 'foreign_nationals':
+                title = 'Foreign Nationals Distribution';
+                valueLabel = 'Foreign Nationals';
+                break;
+            }
+            
+            this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
+              (props ? 
+                `<b>${props.state}</b><br />` + 
+                (props[`total_${dataType}`] || 0).toLocaleString() + 
+                ` ${valueLabel}` : 
+                'Hover over a state');
+          };
+          
+          // Trigger an update for the info control
+          info.update();
         }
         
         // Add toggle buttons functionality
