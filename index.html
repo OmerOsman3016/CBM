@@ -701,7 +701,7 @@ async function initPopulationDistributionMap() {
     });
     
     // Initialize the map
-    const populationMap = L.map('population-distribution-map').setView([16, 30], L.Browser.mobile ? 3 : 5.5);
+    const populationMap = L.map('population-distribution-map').setView([16, 30], L.Browser.mobile ? 3 : 6);
     
     // Add the base layer
     const mapboxCustom = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
