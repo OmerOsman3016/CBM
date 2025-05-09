@@ -33,76 +33,7 @@
  
 
   <script>
-    // Loading spinner functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      // Simulate loading progress
-      let progress = 0;
-      const progressBar = document.getElementById('progress-bar');
-      const loadingSpinner = document.getElementById('loading-spinner');
-      const loadingText = document.querySelector('.loading-text');
-      
-      // Update progress bar
-      const progressInterval = setInterval(function() {
-        progress += Math.random() * 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(progressInterval);
-          
-          // Change text when loading is complete
-          loadingText.textContent = 'Almost there...';
-          
-          // Add a small delay before hiding to ensure everything is loaded
-          setTimeout(function() {
-            loadingSpinner.style.opacity = '0';
-            setTimeout(function() {
-              loadingSpinner.style.display = 'none';
-              document.body.style.animation = 'fadeIn 1.5s ease-in-out forwards';
-            }, 500);
-          }, 500);
-        }
-        progressBar.style.width = progress + '%';
-      }, 200);
-    });
-
-    // Slideshow functionality
-    let slideIndex = 1;
-    showSlides(slideIndex);
-    
-    // Next/previous controls
-    function plusSlides(n) {
-      showSlides(slideIndex += n);
-    }
-    
-    // Thumbnail image controls
-    function currentSlide(n) {
-      showSlides(slideIndex = n);
-    }
-    
-    function showSlides(n) {
-      let i;
-      let slides = document.getElementsByClassName("slide");
-      let dots = document.getElementsByClassName("dot");
-      
-      if (n > slides.length) {slideIndex = 1}
-      if (n < 1) {slideIndex = slides.length}
-      
-      for (i = 0; i < slides.length; i++) {
-        slides[i].style.display = "none";
-      }
-      
-      for (i = 0; i < dots.length; i++) {
-        dots[i].className = dots[i].className.replace(" active", "");
-      }
-      
-      slides[slideIndex-1].style.display = "block";
-      dots[slideIndex-1].className += " active";
-    }
-    
-    // Auto-advance slides every 5 seconds
-    setInterval(() => {
-      plusSlides(1);
-    }, 5000);
-
+     
     // Define Mapbox custom layers
     const mapboxCustom1 = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
         attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
