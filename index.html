@@ -759,7 +759,8 @@ async function initPopulationDistributionMap() {
     if (loadingElement) loadingElement.style.display = 'none';
   }
 }
-
+/ Call the initialization function when the DOM is ready
+document.addEventListener('DOMContentLoaded', initPopulationDistributionMap);
 
 </script>
 </body>
