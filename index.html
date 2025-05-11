@@ -761,13 +761,13 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
     
     function getColorForForeignNationals(d) {
       // Use RGB(0, 196, 148) for foreign nationals with different opacities
-      return d > 1000000 ? 'rgba(0, 196, 148, 0.9)' :
-             d > 500000  ? 'rgba(0, 196, 148, 0.8)' :
-             d > 200000  ? 'rgba(0, 196, 148, 0.7)' :
-             d > 100000  ? 'rgba(0, 196, 148, 0.6)' :
-             d > 50000   ? 'rgba(0, 196, 148, 0.5)' :
-             d > 20000   ? 'rgba(0, 196, 148, 0.4)' :
-                           'rgba(0, 196, 148, 0.3)';
+     return d > 1000000 ? 'rgba(255, 184, 28, 0.9)' :
+       d > 500000  ? 'rgba(255, 184, 28, 0.8)' :
+       d > 200000  ? 'rgba(255, 184, 28, 0.7)' :
+       d > 100000  ? 'rgba(255, 184, 28, 0.6)' :
+       d > 50000   ? 'rgba(255, 184, 28, 0.5)' :
+       d > 20000   ? 'rgba(255, 184, 28, 0.4)' :
+                     'rgba(255, 184, 28, 0.3)';
     }
     
     // Main color function that selects the appropriate palette
