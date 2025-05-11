@@ -749,14 +749,14 @@ async function initPopulationDistributionMap() {
     }
     
     function getColorForReturnees(d) {
-      // Use RGB(255, 137, 82) for returnees with different opacities
-      return d > 1000000 ? 'rgba(255, 137, 82, 0.9)' :
-             d > 500000  ? 'rgba(255, 137, 82, 0.8)' :
-             d > 200000  ? 'rgba(255, 137, 82, 0.7)' :
-             d > 100000  ? 'rgba(255, 137, 82, 0.6)' :
-             d > 50000   ? 'rgba(255, 137, 82, 0.5)' :
-             d > 20000   ? 'rgba(255, 137, 82, 0.4)' :
-                           'rgba(255, 137, 82, 0.3)';
+    // Use RGB(255, 103, 31) for returnees with different opacities
+return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
+       d > 500000  ? 'rgba(255, 103, 31, 0.8)' :
+       d > 200000  ? 'rgba(255, 103, 31, 0.7)' :
+       d > 100000  ? 'rgba(255, 103, 31, 0.6)' :
+       d > 50000   ? 'rgba(255, 103, 31, 0.5)' :
+       d > 20000   ? 'rgba(255, 103, 31, 0.4)' :
+                     'rgba(255, 103, 31, 0.3)';
     }
     
     function getColorForForeignNationals(d) {
