@@ -54,143 +54,6 @@
       justify-content: center;
     }
     
-    /* Loading spinner styles */
-    #loading-spinner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(255, 255, 255, 0.95);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease;
-    }
-    
-    .spinner {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
-    }
-    
-    .spinner-dot {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      background-color: #2A6FBB;
-      border-radius: 50%;
-      animation: spinner 1.2s linear infinite;
-    }
-    
-    .spinner-dot:nth-child(1) {
-      top: 0;
-      left: 34px;
-      animation-delay: 0s;
-    }
-    
-    .spinner-dot:nth-child(2) {
-      top: 6px;
-      left: 60px;
-      animation-delay: -0.1s;
-    }
-    
-    .spinner-dot:nth-child(3) {
-      top: 20px;
-      left: 68px;
-      animation-delay: -0.2s;
-    }
-    
-    .spinner-dot:nth-child(4) {
-      top: 34px;
-      left: 60px;
-      animation-delay: -0.3s;
-    }
-    
-    .spinner-dot:nth-child(5) {
-      top: 40px;
-      left: 34px;
-      animation-delay: -0.4s;
-    }
-    
-    .spinner-dot:nth-child(6) {
-      top: 34px;
-      left: 6px;
-      animation-delay: -0.5s;
-    }
-    
-    .spinner-dot:nth-child(7) {
-      top: 20px;
-      left: 0;
-      animation-delay: -0.6s;
-    }
-    
-    .spinner-dot:nth-child(8) {
-      top: 6px;
-      left: 6px;
-      animation-delay: -0.7s;
-    }
-    
-    @keyframes spinner {
-      0%, 20%, 80%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.5);
-      }
-    }
-    
-    .loading-text {
-      text-align: center;
-      margin: 10px 0;
-      font-size: 16px;
-      color: #444;
-      max-width: 500px;
-      padding: 0 20px;
-    }
-    
-    .loading-text:first-of-type {
-      font-weight: 600;
-      font-size: 18px;
-      color: #2A6FBB;
-    }
-    
-    .loading-progress {
-      width: 300px;
-      height: 6px;
-      background-color: #e0e0e0;
-      border-radius: 3px;
-      margin-top: 20px;
-      overflow: hidden;
-    }
-    
-    .loading-progress-bar {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, #2A6FBB, #4a9cf9);
-      transition: width 0.3s ease;
-    }
-    
-    /* Animation for page content */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from { 
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to { 
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
     /* Enhanced Map Container Styles */
     #population-distribution-map-wrapper {
       flex-grow: 1;
@@ -210,6 +73,23 @@
       border: 1px solid #d1d9e6;
     }
     
+    /* Animation for page content */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .main-container {
@@ -224,14 +104,6 @@
       #population-distribution-map {
         height: 70vh;
       }
-      
-      .loading-text {
-        font-size: 15px;
-      }
-      
-      .loading-progress {
-        width: 250px;
-      }
     }
     
     @media (max-width: 480px) {
@@ -243,20 +115,6 @@
       #population-distribution-map {
         height: 60vh;
       }
-      
-      .loading-text {
-        font-size: 14px;
-      }
-      
-      .spinner {
-        width: 60px;
-        height: 60px;
-      }
-      
-      .spinner-dot {
-        width: 10px;
-        height: 10px;
-      }
     }
   </style>
 </head>
@@ -264,61 +122,10 @@
 <body>
   <div class="canvas-layer"></div>
   <div class="main-container">
-    <!-- Loading Spinner -->
-    <div id="loading-spinner">
-      <div class="spinner">
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-        <div class="spinner-dot"></div>
-      </div>
-      <div class="loading-text">Loading Displacement Data...</div>
-      <div class="loading-text">Sudan's war has created the world's worst displacement crisis, with millions at risk ...</div>
-      <div class="loading-progress">
-        <div class="loading-progress-bar" id="progress-bar"></div>
-      </div>
-    </div>
+    <!-- Map container will be inserted here by JavaScript -->
   </div>
 
   <script>
-    // Loading spinner functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      // Simulate loading progress
-      let progress = 0;
-      const progressBar = document.getElementById('progress-bar');
-      const loadingSpinner = document.getElementById('loading-spinner');
-      const loadingText = document.querySelector('.loading-text');
-      
-      // Update progress bar
-      const progressInterval = setInterval(function() {
-        progress += Math.random() * 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(progressInterval);
-          
-          // Change text when loading is complete
-          loadingText.textContent = 'Almost there...';
-          
-          // Add a small delay before hiding to ensure everything is loaded
-          setTimeout(function() {
-            loadingSpinner.style.opacity = '0';
-            setTimeout(function() {
-              loadingSpinner.style.display = 'none';
-              document.body.style.animation = 'fadeIn 1.5s ease-in-out forwards';
-            }, 500);
-          }, 500);
-        }
-        progressBar.style.width = progress + '%';
-      }, 200);
-    });
-  </script>
-</body>
-</html>
-<script>
 // Function to initialize the Population Distribution map
 async function initPopulationDistributionMap() {
   console.log("Initializing Population Distribution Map");
@@ -349,16 +156,10 @@ async function initPopulationDistributionMap() {
       </div>
     `;
     
-    // Insert the map container after the IDPs section
-    const idpsSection = document.getElementById('idps-section');
-    if (idpsSection && idpsSection.nextSibling) {
-      idpsSection.parentNode.insertBefore(mapContainer, idpsSection.nextSibling);
-    } else {
-      // Fallback: append to main container
-      const mainContainer = document.querySelector('.main-container');
-      if (mainContainer) {
-        mainContainer.appendChild(mapContainer);
-      }
+    // Insert the map container into the main container
+    const mainContainer = document.querySelector('.main-container');
+    if (mainContainer) {
+      mainContainer.appendChild(mapContainer);
     }
     
     // Add CSS for the new map container and metrics panel
@@ -1016,3 +817,5 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
 // Call the initialization function when the DOM is ready
 document.addEventListener('DOMContentLoaded', initPopulationDistributionMap);
 </script>
+</body>
+</html>
