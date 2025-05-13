@@ -305,7 +305,6 @@
       <div class="population-toggle">
         <button class="toggle-btn active" data-type="idps">Internally Displaced People</button>
         <button class="toggle-btn" data-type="returnees">Returnees</button>
-        <button class="toggle-btn" data-type="foreign_nationals">Foreign Nationals</button>
       </div>
     </div>
     <div id="population-distribution-map"></div>
@@ -334,93 +333,75 @@ async function initPopulationDistributionMap() {
     const populationData = {
       "North Darfur": { 
         idps: 1762447, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "South Darfur": { 
         idps: 1841031, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "West Darfur": { 
         idps: 329387, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "East Darfur": { 
         idps:794348, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "Central Darfur": { 
         idps: 936057, 
-        returnees:0,
-        foreign_nationals: 0
+        returnees:0
       },
       "Khartoum": { 
         idps: 106919, 
-        returnees:  34100,
-        foreign_nationals:  20000
+        returnees:  34100
       },
       "Aj Jazirah": { 
         idps: 249740, 
-        returnees: 486730,
-        foreign_nationals: 7890
+        returnees: 486730
       },
       "White Nile": { 
         idps: 634978, 
-        returnees: 0,
-        foreign_nationals: 8901
+        returnees: 0
       },
       "Blue Nile": { 
         idps: 428443, 
-        returnees: 0,
-        foreign_nationals: 9012
+        returnees: 0
       },
       "Sennar": { 
         idps: 122589, 
-        returnees: 126774,
-        foreign_nationals: 0
+        returnees: 126774
       },
       "Kassala": { 
         idps: 196056, 
-        returnees: 0,
-        foreign_nationals: 50000
+        returnees: 0
       },
       "Red Sea": { 
         idps: 226076, 
-        returnees: 0,
-        foreign_nationals: 100000
+        returnees: 0
       },
       "Northern": { 
         idps:537981, 
-        returnees: 0,
-        foreign_nationals:7000
+        returnees: 0
       },
       "River Nile": { 
         idps: 716434, 
-        returnees:  0,
-        foreign_nationals:  12000
+        returnees:  0
       },
       "North Kordofan": { 
         idps: 203416, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "South Kordofan": { 
         idps: 401433, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "West Kordofan": { 
         idps: 349800, 
-        returnees: 0,
-        foreign_nationals: 0
+        returnees: 0
       },
       "Gedaref": { 
         idps: 701825, 
-        returnees: 0,
-        foreign_nationals:70000
+        returnees: 0
       }
     };
     
@@ -432,13 +413,11 @@ async function initPopulationDistributionMap() {
       if (stateName && populationData[stateName]) {
         feature.properties.total_idps = populationData[stateName].idps || 0;
         feature.properties.total_returnees = populationData[stateName].returnees || 0;
-        feature.properties.total_foreign_nationals = populationData[stateName].foreign_nationals || 0;
         feature.properties.state = stateName;
       } else {
         console.warn(`No population data found for state: ${stateName}`);
         feature.properties.total_idps = 0;
         feature.properties.total_returnees = 0;
-        feature.properties.total_foreign_nationals = 0;
         feature.properties.state = stateName || 'Unknown';
       }
     });
@@ -477,7 +456,7 @@ async function initPopulationDistributionMap() {
     
     L.control.layers(baseLayers).addTo(populationMap);
     
-    // Current data type (IDPs, Returnees, or Foreign Nationals)
+    // Current data type (IDPs or Returnees)
     let currentDataType = 'idps';
     
     // Define color functions based on population type
@@ -492,25 +471,14 @@ async function initPopulationDistributionMap() {
     }
     
     function getColorForReturnees(d) {
-    // Use RGB(255, 103, 31) for returnees with different opacities
-return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
-       d > 500000  ? 'rgba(255, 103, 31, 0.8)' :
-       d > 200000  ? 'rgba(255, 103, 31, 0.7)' :
-       d > 100000  ? 'rgba(255, 103, 31, 0.6)' :
-       d > 50000   ? 'rgba(255, 103, 31, 0.5)' :
-       d > 20000   ? 'rgba(255, 103, 31, 0.4)' :
-                     'rgba(255, 103, 31, 0.3)';
-    }
-    
-    function getColorForForeignNationals(d) {
-      // Use RGB(0, 196, 148) for foreign nationals with different opacities
-     return d > 1000000 ? 'rgba(255, 184, 28, 0.9)' :
-       d > 500000  ? 'rgba(255, 184, 28, 0.8)' :
-       d > 200000  ? 'rgba(255, 184, 28, 0.7)' :
-       d > 100000  ? 'rgba(255, 184, 28, 0.6)' :
-       d > 50000   ? 'rgba(255, 184, 28, 0.5)' :
-       d > 20000   ? 'rgba(255, 184, 28, 0.4)' :
-                     'rgba(255, 184, 28, 0.3)';
+      // Use RGB(255, 103, 31) for returnees with different opacities
+      return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
+             d > 500000  ? 'rgba(255, 103, 31, 0.8)' :
+             d > 200000  ? 'rgba(255, 103, 31, 0.7)' :
+             d > 100000  ? 'rgba(255, 103, 31, 0.6)' :
+             d > 50000   ? 'rgba(255, 103, 31, 0.5)' :
+             d > 20000   ? 'rgba(255, 103, 31, 0.4)' :
+                           'rgba(255, 103, 31, 0.3)';
     }
     
     // Main color function that selects the appropriate palette
@@ -520,8 +488,6 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
           return getColorForIDPs(d);
         case 'returnees':
           return getColorForReturnees(d);
-        case 'foreign_nationals':
-          return getColorForForeignNationals(d);
         default:
           return getColorForIDPs(d);
       }
@@ -604,10 +570,6 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
           title = 'Returnee Distribution';
           valueLabel = 'Returnees';
           break;
-        case 'foreign_nationals':
-          title = 'Foreign Nationals Distribution';
-          valueLabel = 'Foreign Nationals';
-          break;
       }
       
       this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
@@ -656,10 +618,6 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
             title = 'Returnee Distribution';
             valueLabel = 'Returnees';
             break;
-          case 'foreign_nationals':
-            title = 'Foreign Nationals Distribution';
-            valueLabel = 'Foreign Nationals';
-            break;
         }
         
         this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
@@ -704,11 +662,6 @@ return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
           grades = [0, 50000, 100000, 200000, 500000, 1000000];
           title = 'Returnees';
           colorFunc = getColorForReturnees;
-          break;
-        case 'foreign_nationals':
-          grades = [0, 50000, 100000, 200000, 500000, 1000000];
-          title = 'Foreign Nationals';
-          colorFunc = getColorForForeignNationals;
           break;
       }
       
