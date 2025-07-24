@@ -1272,227 +1272,27 @@ function initFlowMap() {
       }).addTo(flowMap);
     }
     
-    // Sample flow data - in a real app, this would come from your data source
-    const flowData = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          properties: {
-            s_state_id: "SD15", // Khartoum
-            s_State: "Khartoum",
-            s_lat: 15.5007,
-            s_lon: 32.5599,
-            e_locality_id: "SD01", // North Darfur
-            e_locality: "North Darfur",
-            e_lat: 15.7666,
-            e_lon: 24.9042,
-            e_Volume: 50000,
-            main_needs: "Shelter, Food"
-          },
-          geometry: { type: 'Point', coordinates: [32.5599, 15.5007] }
-        },
-        {
-          type: 'Feature',
-          properties: {
-            s_state_id: "SD15", // Khartoum
-            s_State: "Khartoum",
-            s_lat: 15.5007,
-            s_lon: 32.5599,
-            e_locality_id: "SD02", // South Darfur
-            e_locality: "South Darfur",
-            e_lat: 11.1992,
-            e_lon: 24.9056,
-            e_Volume: 30000,
-            main_needs: "Shelter, Water"
-          },
-          geometry: { type: 'Point', coordinates: [32.5599, 15.5007] }
-        },
-        {
-          type: 'Feature',
-          properties: {
-            s_state_id: "SD15", // Khartoum
-            s_State: "Khartoum",
-            s_lat: 15.5007,
-            s_lon: 32.5599,
-            e_locality_id: "SD03", // West Darfur
-            e_locality: "West Darfur",
-            e_lat: 12.8628,
-            e_lon: 23.7333,
-            e_Volume: 20000,
-            main_needs: "Food, Medical"
-          },
-          geometry: { type: 'Point', coordinates: [32.5599, 15.5007] }
-        },
-        {
-          type: 'Feature',
-          properties: {
-            s_state_id: "SD15", // Khartoum
-            s_State: "Khartoum",
-            s_lat: 15.5007,
-            s_lon: 32.5599,
-            e_locality_id: "SD04", // East Darfur
-            e_locality: "East Darfur",
-            e_lat: 11.1609,
-            e_lon: 26.7426,
-            e_Volume: 15000,
-            main_needs: "Shelter, Food"
-          },
-          geometry: { type: 'Point', coordinates: [32.5599, 15.5007] }
-        },
-        {
-          type: 'Feature',
-          properties: {
-            s_state_id: "SD15", // Khartoum
-            s_State: "Khartoum",
-            s_lat: 15.5007,
-            s_lon: 32.5599,
-            e_locality_id: "SD05", // Central Darfur
-            e_locality: "Central Darfur",
-            e_lat: 12.8628,
-            e_lon: 23.7333,
-            e_Volume: 10000,
-            main_needs: "Water, Medical"
-          },
-          geometry: { type: 'Point', coordinates: [32.5599, 15.5007] }
-        }
-      ]
-    };
-    
-    // Create flowmap layer
-    flowmapLayer = L.canvasFlowmapLayer(flowData, {
-      originAndDestinationFieldIds: {
-        originUniqueIdField: 's_state_id',
-        originGeometry: { x: 's_lon', y: 's_lat' },
-        destinationUniqueIdField: 'e_locality_id',
-        destinationGeometry: { x: 'e_lon', y: 'e_lat' }
-      },
-      style: (feature) => {
-        const baseRadius = 10;
-        const maxRadius = 6;
-        const volume = feature.properties.e_Volume || 0;
+    // Load flow data from CSV
+    Papa.parse('./data/IDPs_Pathway.csv', {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        // Process the data to ensure it's in the correct format
+        const processedData = processFlowData(results.data);
+        initializeFlowmapLayer(processedData);
         
-        // Different styles for origin and destination points
-        const radius = feature.properties.isOrigin
-          ? baseRadius
-          : Math.min(baseRadius + (volume / 5000), maxRadius);
-        
-        return {
-          radius: radius,
-          weight: 1,
-          color: '#fff',
-          fillColor: feature.properties.isOrigin ? '#ff671f' : '#418FDE',
-          fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
-        };
+        // Hide loading state
+        if (loadingElement) loadingElement.style.display = 'none';
       },
-      canvasBezierStyle: {
-        type: 'classBreaks',
-        field: 'e_Volume',
-        classBreakInfos: [
-          { 
-            classMinValue: 1, 
-            classMaxValue: 80000, 
-            symbol: { 
-              strokeStyle: '#ffb81c', 
-              lineWidth: 0.5, 
-              lineCap: 'round', 
-              shadowColor: '#fee8c8', 
-              shadowBlur: 2.0 
-            } 
-          },
-          { 
-            classMinValue: 80001, 
-            classMaxValue: 1000000, 
-            symbol: { 
-              strokeStyle: '#ff671f', 
-              lineWidth: 1.5, 
-              lineCap: 'round', 
-              shadowColor: '#fdbb84', 
-              shadowBlur: 2.0 
-            } 
-          },
-          { 
-            classMinValue: 1000001, 
-            classMaxValue: 160000, 
-            symbol: { 
-              strokeStyle: '#d22630', 
-              lineWidth: 3, 
-              lineCap: 'round', 
-              shadowColor: '#e34a33', 
-              shadowBlur: 2.0 
-            } 
-          }
-        ],
-        defaultSymbol: { 
-          strokeStyle: '#e7e1ef', 
-          lineWidth: 0.5, 
-          lineCap: 'round', 
-          shadowColor: '#e7e1ef', 
-          shadowBlur: 1.5 
+      error: function(error) {
+        console.error('Error loading flow data:', error);
+        if (loadingElement) {
+          loadingElement.innerHTML = '<div style="color: red; text-align: center;">Error loading flow data. Please try again later.</div>';
         }
-      },
-      pathDisplayMode: 'all',
-      animationStarted: true,
-      animationEasingFamily: 'Linear',
-      animationEasingType: 'None',
-      animationDuration: 3000,
-      onEachFeature: addFlowTooltip
-    }).addTo(flowMap);
-    
-    // Set initial UI states
-    isAnimationPlaying = true;
-    showFlows = true;
-    showPoints = true;
-    updateAnimationButton();
-    updateFlowsButton();
-    updatePointsButton();
-    
-    // Highlight paths on mouseover
-    flowmapLayer.on('mouseover', (e) => {
-      if (e.sharedOriginFeatures.length) {
-        flowmapLayer.selectFeaturesForPathDisplay(e.sharedOriginFeatures, 'SELECTION_NEW');
-      }
-      if (e.sharedDestinationFeatures.length) {
-        flowmapLayer.selectFeaturesForPathDisplay(e.sharedDestinationFeatures, 'SELECTION_NEW');
       }
     });
-    
-    // Select initial feature for path display (Khartoum)
-    flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
-    
-    // Add flow legend
-    const flowLegend = L.control({position: 'bottomright'});
-    
-    flowLegend.onAdd = function() {
-      const div = L.DomUtil.create('div', 'flow-legend');
-      div.innerHTML = `
-        <h4>IDP Flow Volume</h4>
-        <div class="flow-legend-item">
-          <div class="flow-legend-color" style="background:#ffb81c"></div>
-          <span>&lt; 50,000 IDPs</span>
-        </div>
-        <div class="flow-legend-item">
-          <div class="flow-legend-color" style="background:#ff671f"></div>
-          <span>50,000 - 100,000 IDPs</span>
-        </div>
-        <div class="flow-legend-item">
-          <div class="flow-legend-color" style="background:#d22630"></div>
-          <span>&gt; 100,000 IDPs</span>
-        </div>
-        <hr style="margin: 8px 0; border-color: #eee;">
-        <div class="flow-legend-item">
-          <div class="flow-legend-color" style="background:#418FDE"></div>
-          <span>Destination Points</span>
-        </div>
-        <div class="flow-legend-item">
-          <div class="flow-legend-color" style="background:#ff671f"></div>
-          <span>Origin Points</span>
-        </div>
-      `;
-      return div;
-    };
-    
-    flowLegend.addTo(flowMap);
     
     // Add flow control event handlers
     document.getElementById('resetFlowView').addEventListener('click', function() {
@@ -1527,9 +1327,6 @@ function initFlowMap() {
       }
     });
     
-    // Hide loading state
-    if (loadingElement) loadingElement.style.display = 'none';
-    
     console.log("Flow Map initialized successfully");
     
   } catch (error) {
@@ -1542,6 +1339,176 @@ function initFlowMap() {
     const loadingElement = document.getElementById('map-loading');
     if (loadingElement) loadingElement.style.display = 'none';
   }
+}
+
+// Process flow data from CSV to GeoJSON format
+function processFlowData(data) {
+  // Convert CSV data to GeoJSON format
+  const geoJsonFeatureCollection = {
+    type: 'FeatureCollection',
+    features: data.map(datum => ({
+      type: 'Feature',
+      geometry: { 
+        type: 'Point', 
+        coordinates: [
+          parseFloat(datum.s_lon) || 0,
+          parseFloat(datum.s_lat) || 0
+        ] 
+      },
+      properties: {
+        s_state_id: datum.s_state_id,
+        s_State: datum.s_State,
+        s_lat: parseFloat(datum.s_lat) || 0,
+        s_lon: parseFloat(datum.s_lon) || 0,
+        e_locality_id: datum.e_locality_id,
+        e_locality: datum.e_locality,
+        e_lat: parseFloat(datum.e_lat) || 0,
+        e_lon: parseFloat(datum.e_lon) || 0,
+        e_Volume: parseFloat(datum.e_Volume) || 0,
+        main_needs: datum.main_needs
+      }
+    }))
+  };
+  
+  return geoJsonFeatureCollection;
+}
+
+// Initialize the flowmap layer with processed data
+function initializeFlowmapLayer(data) {
+  // Create flowmap layer
+  flowmapLayer = L.canvasFlowmapLayer(data, {
+    originAndDestinationFieldIds: {
+      originUniqueIdField: 's_state_id',
+      originGeometry: { x: 's_lon', y: 's_lat' },
+      destinationUniqueIdField: 'e_locality_id',
+      destinationGeometry: { x: 'e_lon', y: 'e_lat' }
+    },
+    style: (feature) => {
+      const baseRadius = 10;
+      const maxRadius = 6;
+      const volume = feature.properties.e_Volume || 0;
+      
+      // Different styles for origin and destination points
+      const radius = feature.properties.isOrigin
+        ? baseRadius
+        : Math.min(baseRadius + (volume / 5000), maxRadius);
+      
+      return {
+        radius: radius,
+        weight: 1,
+        color: '#fff',
+        fillColor: feature.properties.isOrigin ? '#ff671f' : '#418FDE',
+        fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
+      };
+    },
+    canvasBezierStyle: {
+      type: 'classBreaks',
+      field: 'e_Volume',
+      classBreakInfos: [
+        { 
+          classMinValue: 1, 
+          classMaxValue: 80000, 
+          symbol: { 
+            strokeStyle: '#ffb81c', 
+            lineWidth: 0.5, 
+            lineCap: 'round', 
+            shadowColor: '#fee8c8', 
+            shadowBlur: 2.0 
+          } 
+        },
+        { 
+          classMinValue: 80001, 
+          classMaxValue: 1000000, 
+          symbol: { 
+            strokeStyle: '#ff671f', 
+            lineWidth: 1.5, 
+            lineCap: 'round', 
+            shadowColor: '#fdbb84', 
+            shadowBlur: 2.0 
+          } 
+        },
+        { 
+          classMinValue: 1000001, 
+          classMaxValue: 160000, 
+          symbol: { 
+            strokeStyle: '#d22630', 
+            lineWidth: 3, 
+            lineCap: 'round', 
+            shadowColor: '#e34a33', 
+            shadowBlur: 2.0 
+          } 
+        }
+      ],
+      defaultSymbol: { 
+        strokeStyle: '#e7e1ef', 
+        lineWidth: 0.5, 
+        lineCap: 'round', 
+        shadowColor: '#e7e1ef', 
+        shadowBlur: 1.5 
+      }
+    },
+    pathDisplayMode: 'all',
+    animationStarted: true,
+    animationEasingFamily: 'Linear',
+    animationEasingType: 'None',
+    animationDuration: 3000,
+    onEachFeature: addFlowTooltip
+  }).addTo(flowMap);
+  
+  // Set initial UI states
+  isAnimationPlaying = true;
+  showFlows = true;
+  showPoints = true;
+  updateAnimationButton();
+  updateFlowsButton();
+  updatePointsButton();
+  
+  // Highlight paths on mouseover
+  flowmapLayer.on('mouseover', (e) => {
+    if (e.sharedOriginFeatures.length) {
+      flowmapLayer.selectFeaturesForPathDisplay(e.sharedOriginFeatures, 'SELECTION_NEW');
+    }
+    if (e.sharedDestinationFeatures.length) {
+      flowmapLayer.selectFeaturesForPathDisplay(e.sharedDestinationFeatures, 'SELECTION_NEW');
+    }
+  });
+  
+  // Select initial feature for path display (Khartoum)
+  flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
+  
+  // Add flow legend
+  const flowLegend = L.control({position: 'bottomright'});
+  
+  flowLegend.onAdd = function() {
+    const div = L.DomUtil.create('div', 'flow-legend');
+    div.innerHTML = `
+      <h4>IDP Flow Volume</h4>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ffb81c"></div>
+        <span>&lt; 50,000 IDPs</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ff671f"></div>
+        <span>50,000 - 100,000 IDPs</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#d22630"></div>
+        <span>&gt; 100,000 IDPs</span>
+      </div>
+      <hr style="margin: 8px 0; border-color: #eee;">
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#418FDE"></div>
+        <span>Destination Points</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ff671f"></div>
+        <span>Origin Points</span>
+      </div>
+    `;
+    return div;
+  };
+  
+  flowLegend.addTo(flowMap);
 }
 
 // Add tooltip and popup to flow features
