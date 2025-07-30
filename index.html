@@ -12,10 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- Local CSS -->
-  <link rel="stylesheet" href="./css/styles.css">
-  
+
   <!-- External JS -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -24,12 +21,753 @@
   <script src="./src/CanvasFlowmapLayer.js"></script>
   <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+ 
+  <style>
+    /* Base styles */
+    :root {
+      --primary-color: #2A6FBB;
+      --primary-dark: #1a4d8c;
+      --primary-light: #E6F0FA;
+      --secondary-color: #FF671F;
+      --secondary-light: #FFE8DC;
+      --tertiary-color: #4CAF50;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e9ecef;
+      --dark-gray: #495057;
+      --text-color: #212529;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --transition: all 0.3s ease;
+      --header-height: 70px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Open Sans', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #ffffff;
+      color: var(--text-color);
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header styles */
+    .app-header {
+      background-color: white;
+      padding: 15px 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      position: relative;
+      height: var(--header-height);
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .logo-container img {
+      height: 40px;
+    }
+    
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .app-subtitle {
+      font-size: 0.9rem;
+      color: var(--dark-gray);
+      font-weight: 400;
+      margin-top: 3px;
+    }
+    
+    .header-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    /* Main content layout */
+    .main-container {
+      display: flex;
+      height: calc(100vh - var(--header-height));
+    }
+    
+    /* Sidebar styles */
+    .sidebar {
+      width: 350px;
+      background-color: white;
+      padding: 20px;
+      border-right: 1px solid var(--medium-gray);
+      overflow-y: auto;
+      transition: var(--transition);
+      z-index: 10;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+    
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--medium-gray);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .sidebar-title i {
+      font-size: 1rem;
+    }
+    
+    /* Map container styles */
+    .map-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--light-gray);
+    }
+    
+    #population-distribution-map {
+      flex-grow: 1;
+      width: 100%;
+    }
+    
+    #flow-map {
+      flex-grow: 1;
+      width: 100%;
+      display: none;
+    }
+    
+    /* Map controls */
+    .map-controls {
+      padding: 15px 20px;
+      background-color: white;
+      border-bottom: 1px solid var(--medium-gray);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .map-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .map-title i {
+      font-size: 1.2rem;
+    }
+    
+    /* Toggle buttons */
+    .population-toggle {
+      display: flex;
+      background: var(--medium-gray);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .population-toggle .toggle-btn {
+      border: none;
+      padding: 10px 18px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark-gray);
+      transition: var(--transition);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  
+    .population-toggle .toggle-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .population-toggle .toggle-btn:hover:not(.active) {
+      background: #d1d9e6;
+    }
+    
+    .toggle-btn i {
+      font-size: 16px;
+    }
+    
+    /* Search container */
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    #state-search {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--medium-gray);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      transition: var(--transition);
+      background-color: var(--light-gray);
+    }
+    
+    #state-search:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(42, 111, 187, 0.15);
+    }
+    
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--medium-gray);
+      border-top: none;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .search-results div {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 14px;
+    }
+    
+    .search-results div:hover {
+      background-color: var(--light-gray);
+    }
+    
+    /* Info and legend styles */
+    .info {
+      padding: 15px;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      font-size: 14px;
+      line-height: 1.5;
+      border: 1px solid var(--medium-gray);
+      max-width: 250px;
+    }
+    
+    .info h4 {
+      margin: 0 0 10px;
+      color: var(--primary-color);
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .population-legend {
+      background: white;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      line-height: 1.5;
+      font-size: 14px;
+      border: 1px solid var(--medium-gray);
+    }
+    
+    .population-legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.9;
+      border-radius: 3px;
+    }
+    
+    .population-legend h4 {
+      margin: 0 0 12px;
+      color: var(--primary-color);
+      font-size: 16px;
+      font-weight: 700;
+      clear: both;
+    }
+    
+    /* Loading state */
+    .map-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      font-size: 16px;
+      color: var(--text-color);
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .map-loading:after {
+      content: "";
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--medium-gray);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Data summary cards */
+    .data-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      box-shadow: var(--box-shadow);
+      border: 1px solid var(--medium-gray);
+      transition: var(--transition);
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    
+    .summary-card h3 {
+      font-size: 14px;
+      color: var(--dark-gray);
+      margin-bottom: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .summary-card .value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .summary-card .change {
+      font-size: 12px;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .summary-card .change.positive {
+      color: var(--tertiary-color);
+    }
+    
+    .summary-card .change.negative {
+      color: var(--secondary-color);
+    }
+    
+    .summary-card.idps {
+      border-top: 3px solid var(--primary-color);
+    }
+    
+    .summary-card.idps .value {
+      color: var(--primary-color);
+    }
+    
+    .summary-card.returnees {
+      border-top: 3px solid var(--secondary-color);
+    }
+    
+    .summary-card.returnees .value {
+      color: var(--secondary-color);
+    }
+    
+    /* Flow map specific styles */
+    .flow-controls {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    
+    .flow-btn {
+      padding: 8px 12px;
+      border-radius: var(--border-radius);
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background-color: var(--light-gray);
+      color: var(--dark-gray);
+      transition: var(--transition);
+    }
+    
+    .flow-btn:hover {
+      background-color: var(--medium-gray);
+    }
+    
+    .flow-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .flow-legend {
+      background: white;
+      padding: 10px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      font-size: 12px;
+      line-height: 1.4;
+      border: 1px solid var(--medium-gray);
+      max-width: 200px;
+    }
+    
+    .flow-legend h4 {
+      margin: 0 0 8px;
+      color: var(--primary-color);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .flow-legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .flow-legend-color {
+      width: 15px;
+      height: 15px;
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+    
+    /* Tab controls */
+    .map-tabs {
+      display: flex;
+      background: var(--medium-gray);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--box-shadow);
+      margin-bottom: 15px;
+    }
+    
+    .map-tab {
+      padding: 10px 15px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--dark-gray);
+      transition: var(--transition);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      flex: 1;
+      justify-content: center;
+    }
+    
+    .map-tab.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .map-tab:hover:not(.active) {
+      background: #d1d9e6;
+    }
+    
+    /* Chart container */
+    .chart-container {
+      margin-top: 15px;
+      height: 200px;
+      position: relative;
+    }
+    
+    /* Time period selector */
+    .time-period-selector {
+      display: flex;
+      background: var(--light-gray);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    
+    .time-period-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark-gray);
+      text-align: center;
+      transition: var(--transition);
+    }
+    
+    .time-period-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .sidebar {
+        width: 320px;
+        padding: 15px;
+      }
+      
+      .map-controls {
+        padding: 12px 15px;
+      }
+      
+      .map-title {
+        font-size: 1.2rem;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .sidebar {
+        position: absolute;
+        left: -350px;
+        top: var(--header-height);
+        bottom: 0;
+        z-index: 100;
+        background: white;
+      }
+      
+      .sidebar.active {
+        left: 0;
+      }
+      
+      .sidebar-toggle {
+        display: block !important;
+      }
+      
+      .flow-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      
+      .map-title {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 12px 15px;
+      }
+      
+      .app-title {
+        font-size: 1.2rem;
+      }
+      
+      .header-controls {
+        gap: 10px;
+      }
+      
+      .map-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .population-toggle {
+        width: 100%;
+      }
+      
+      .search-container {
+        max-width: 100%;
+      }
+      
+      .data-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .map-tabs {
+        width: 100%;
+      }
+      
+      .map-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      
+      .flow-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .flow-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .header-controls {
+        gap: 8px;
+      }
+      
+      .population-toggle .toggle-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      
+      .map-loading {
+        font-size: 14px;
+      }
+      
+      .map-loading:after {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .flow-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      
+      .summary-card .value {
+        font-size: 18px;
+      }
+    }
+    
+    /* Utility classes */
+    .hidden {
+      display: none !important;
+    }
+    
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--primary-color);
+      cursor: pointer;
+      display: none;
+    }
+    
+    .btn {
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+    
+    .btn-outline:hover {
+      background-color: rgba(42, 111, 187, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--light-gray);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark);
+    }
+    
+    /* Animation for cards */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .summary-card {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .summary-card.returnees {
+      animation-delay: 0.1s;
+    }
+  </style>
 </head>
 
 <body>
   <header class="app-header">
     <div class="logo-container">
-      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+      <button class="sidebar-toggle" id="sidebarToggle">
         <i class="fas fa-bars"></i>
       </button>
       <div>
@@ -38,10 +776,10 @@
       </div>
     </div>
     <div class="header-controls">
-      <button class="btn btn-outline" id="exportBtn">
+      <button class="btn btn-outline">
         <i class="fas fa-download"></i> Export
       </button>
-      <button class="btn btn-primary" id="helpBtn">
+      <button class="btn btn-primary">
         <i class="fas fa-question-circle"></i> Help
       </button>
     </div>
@@ -56,29 +794,29 @@
         <div class="data-summary">
           <div class="summary-card idps">
             <h3><i class="fas fa-people-arrows"></i> Total IDPs</h3>
-            <div class="value" id="totalIdps">Loading...</div>
-            <div class="change" id="idpsChange">
-              <i class="fas fa-spinner fa-spin"></i> Loading trend data
+            <div class="value">9,842,000</div>
+            <div class="change negative">
+              <i class="fas fa-arrow-up"></i> 12% increase from last month
             </div>
           </div>
           <div class="summary-card returnees">
             <h3><i class="fas fa-home"></i> Total Returnees</h3>
-            <div class="value" id="totalReturnees">Loading...</div>
-            <div class="change" id="returneesChange">
-              <i class="fas fa-spinner fa-spin"></i> Loading trend data
+            <div class="value">647,604</div>
+            <div class="change positive">
+              <i class="fas fa-arrow-down"></i> 5% decrease from last month
             </div>
           </div>
         </div>
         
         <div class="chart-container">
-          <canvas id="trendChart" aria-label="Population trend chart"></canvas>
+          <canvas id="trendChart"></canvas>
         </div>
         
         <div class="time-period-selector">
-          <button class="time-period-btn active" data-period="3">3M</button>
-          <button class="time-period-btn" data-period="6">6M</button>
-          <button class="time-period-btn" data-period="12">1Y</button>
-          <button class="time-period-btn" data-period="0">All</button>
+          <button class="time-period-btn active">3M</button>
+          <button class="time-period-btn">6M</button>
+          <button class="time-period-btn">1Y</button>
+          <button class="time-period-btn">All</button>
         </div>
       </div>
       
@@ -87,16 +825,16 @@
           <i class="fas fa-map-marked-alt"></i> Map Controls
         </h2>
         <div class="map-tabs">
-          <button class="map-tab active" data-tab="population" aria-label="Show population map">
+          <button class="map-tab active" data-tab="population">
             <i class="fas fa-map-marked-alt"></i> Population
           </button>
-          <button class="map-tab" data-tab="flow" aria-label="Show flow map">
+          <button class="map-tab" data-tab="flow">
             <i class="fas fa-project-diagram"></i> Flow
           </button>
         </div>
         <div class="search-container">
-          <input type="text" id="state-search" placeholder="Search for a state..." aria-label="Search for a state" />
-          <div class="search-results" id="searchResults" role="listbox"></div>
+          <input type="text" id="state-search" placeholder="Search for a state..." />
+          <div class="search-results" id="searchResults"></div>
         </div>
       </div>
       
@@ -104,8 +842,10 @@
         <h2 class="sidebar-title">
           <i class="fas fa-info-circle"></i> Key Insights
         </h2>
-        <div class="insights-container" id="insightsContainer">
-          <p><i class="fas fa-spinner fa-spin"></i> Loading insights...</p>
+        <div style="font-size: 13px; color: var(--dark-gray);">
+          <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
+          <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
+          <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
         </div>
       </div>
       
@@ -113,11 +853,13 @@
         <h2 class="sidebar-title">
           <i class="fas fa-database"></i> Data Sources
         </h2>
-        <div class="data-sources-container">
-          <p>Data provided by the International Organization for Migration (IOM) through the Displacement Tracking Matrix (DTM).</p>
-          <p><strong>Last updated:</strong> <span id="lastUpdated">June 2024</span></p>
-          <p><strong>Next update:</strong> <span id="nextUpdate">July 2024</span></p>
-        </div>
+        <p style="font-size: 13px; color: var(--dark-gray);">
+          Data provided by the International Organization for Migration (IOM) through the Displacement Tracking Matrix (DTM). 
+          <br><br>
+          <strong>Last updated:</strong> June 2024
+          <br>
+          <strong>Next update:</strong> July 2024
+        </p>
       </div>
     </aside>
     
@@ -127,259 +869,195 @@
           <i class="fas fa-map-marked-alt"></i> Population Distribution Map
         </h2>
         <div class="population-toggle" id="populationToggle">
-          <button class="toggle-btn active" data-type="idps" aria-label="Show IDP data">
+          <button class="toggle-btn active" data-type="idps">
             <i class="fas fa-people-arrows"></i> IDPs
           </button>
-          <button class="toggle-btn" data-type="returnees" aria-label="Show returnee data">
+          <button class="toggle-btn" data-type="returnees">
             <i class="fas fa-home"></i> Returnees
           </button>
         </div>
         <div class="flow-controls" id="flowControls" style="display: none;">
-          <button class="flow-btn" id="resetFlowView" aria-label="Reset flow map view">
+          <button class="flow-btn" id="resetFlowView">
             <i class="fas fa-globe-africa"></i> Reset
           </button>
-          <button class="flow-btn active" id="toggleAnimation" aria-label="Toggle animation">
+          <button class="flow-btn active" id="toggleAnimation">
             <i class="fas fa-play"></i> Play
           </button>
-          <button class="flow-btn active" id="toggleFlows" aria-label="Toggle flow lines">
+          <button class="flow-btn active" id="toggleFlows">
             <i class="fas fa-wave-square"></i> Flows
           </button>
-          <button class="flow-btn active" id="togglePoints" aria-label="Toggle points">
+          <button class="flow-btn active" id="togglePoints">
             <i class="fas fa-map-marker-alt"></i> Points
           </button>
         </div>
       </div>
-      
-      <div class="map-wrapper">
-        <div id="population-distribution-map" aria-label="Population distribution map"></div>
-        <div id="flow-map" aria-label="Population flow map" style="display: none;"></div>
-        <div id="map-loading" class="map-loading">
-          <div class="loading-content">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading map data...</p>
-          </div>
-        </div>
-        <div id="map-error" class="map-error" style="display: none;">
-          <div class="error-content">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Error loading map data. Please try again later.</p>
-            <button class="btn btn-primary" id="retryLoadBtn">Retry</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Help Modal -->
-  <div id="helpModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Dashboard Help</h2>
-        <button class="close-modal" aria-label="Close help modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <h3>Using the Dashboard</h3>
-        <p>This dashboard displays displacement data for Sudan, showing both population distributions and movement flows.</p>
-        
-        <h4>Population Map</h4>
-        <ul>
-          <li>Toggle between IDPs (Internally Displaced Persons) and Returnees using the buttons</li>
-          <li>Hover over states to see detailed numbers</li>
-          <li>Click on states to zoom in</li>
-        </ul>
-        
-        <h4>Flow Map</h4>
-        <ul>
-          <li>View movement patterns between locations</li>
-          <li>Use the controls to play/pause animation and toggle elements</li>
-          <li>Click on points to see detailed information</li>
-        </ul>
-        
-        <h3>Data Sources</h3>
-        <p>All data comes from the International Organization for Migration (IOM) Displacement Tracking Matrix (DTM).</p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary close-modal">Close</button>
-      </div>
+      <div id="population-distribution-map"></div>
+      <div id="flow-map"></div>
+      <div id="map-loading" class="map-loading">Loading map data...</div>
     </div>
   </div>
 
   <script>
-// Dashboard Configuration
-const CONFIG = {
-  dataUrls: {
-    geojson: './data/ADMIN1.json',
-    flowData: './data/IDPs_Pathway.csv',
-    metadata: './data/metadata.json'
-  },
-  mapSettings: {
-    initialView: [16, 30],
-    populationZoom: 6,
-    flowZoom: 5.5,
-    mobileZoom: 3,
-    maxBounds: [
-      [8, 21], // SW
-      [23, 39]  // NE
-    ]
-  },
-  colors: {
-    idps: ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#084594'],
-    returnees: [
-      'rgba(255, 103, 31, 0.3)',
-      'rgba(255, 103, 31, 0.4)',
-      'rgba(255, 103, 31, 0.5)',
-      'rgba(255, 103, 31, 0.6)',
-      'rgba(255, 103, 31, 0.7)',
-      'rgba(255, 103, 31, 0.8)',
-      'rgba(255, 103, 31, 0.9)'
-    ],
-    flow: {
-      low: '#ffb81c',
-      medium: '#ff671f',
-      high: '#d22630',
-      origin: '#ff671f',
-      destination: '#418FDE'
-    }
-  },
-  baseLayers: {
-    "Mapbox Custom": 'https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q',
-    "CartoDB Light": 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    "OpenStreetMap": 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    "Esri World Imagery": 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-  }
-};
+// Global variables
+let populationMap, flowMap;
+let geojsonLayer, flowmapLayer;
+let currentDataType = 'idps';
+let isAnimationPlaying = false;
+let showFlows = true;
+let showPoints = true;
+let sudanStatesData;
+let trendChart;
 
-// Dashboard State
-const STATE = {
-  currentDataType: 'idps',
-  isAnimationPlaying: false,
-  showFlows: true,
-  showPoints: true,
-  trendPeriod: '3',
-  populationData: null,
-  flowData: null,
-  metadata: null
-};
-
-// DOM Elements
-const DOM = {
-  populationMap: null,
-  flowMap: null,
-  geojsonLayer: null,
-  flowmapLayer: null,
-  trendChart: null,
-  infoControl: null,
-  legendControl: null,
-  flowLegendControl: null
-};
-
-// Initialize the dashboard when DOM is ready
-document.addEventListener('DOMContentLoaded', async () => {
+// Function to initialize the Population Distribution map
+async function initPopulationDistributionMap() {
+  console.log("Initializing Population Distribution Map");
+  
   try {
-    // Initialize UI components
-    initUI();
+    // Show loading state
+    const loadingElement = document.getElementById('map-loading');
+    if (loadingElement) loadingElement.style.display = 'flex';
     
-    // Load all data in parallel
-    await Promise.all([
-      loadMetadata(),
-      loadPopulationData(),
-      loadFlowData()
-    ]);
-    
-    // Initialize maps and charts
-    initPopulationDistributionMap();
+    // Initialize trend chart
     initTrendChart();
-    updateInsights();
     
-    // Set up event listeners
-    setupEventListeners();
+    // Toggle sidebar on mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
     
-  } catch (error) {
-    console.error("Dashboard initialization failed:", error);
-    showError("Failed to initialize dashboard. Please try again later.");
-  }
-});
-
-// Initialize UI components
-function initUI() {
-  // Set up sidebar toggle
-  document.getElementById('sidebarToggle').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('active');
-  });
-  
-  // Set up help modal
-  const helpModal = document.getElementById('helpModal');
-  document.getElementById('helpBtn').addEventListener('click', () => {
-    helpModal.style.display = 'block';
-  });
-  
-  document.querySelectorAll('.close-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      helpModal.style.display = 'none';
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+      });
+    }
+    
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.map-tab');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to the clicked button
+        button.classList.add('active');
+        
+        // Show the appropriate map
+        const tab = button.dataset.tab;
+        if (tab === 'population') {
+          document.getElementById('population-distribution-map').style.display = 'block';
+          document.getElementById('flow-map').style.display = 'none';
+          document.getElementById('populationToggle').style.display = 'flex';
+          document.getElementById('flowControls').style.display = 'none';
+          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-map-marked-alt"></i> Population Distribution Map';
+        } else if (tab === 'flow') {
+          document.getElementById('population-distribution-map').style.display = 'none';
+          document.getElementById('flow-map').style.display = 'block';
+          document.getElementById('populationToggle').style.display = 'none';
+          document.getElementById('flowControls').style.display = 'flex';
+          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-project-diagram"></i> IDP Pathways Flow Map';
+          initFlowMap(); // Initialize flow map if not already done
+        }
+      });
     });
-  });
-  
-  // Close modal when clicking outside
-  window.addEventListener('click', (event) => {
-    if (event.target === helpModal) {
-      helpModal.style.display = 'none';
-    }
-  });
-  
-  // Set up retry button
-  document.getElementById('retryLoadBtn').addEventListener('click', () => {
-    window.location.reload();
-  });
-}
-
-// Load metadata
-async function loadMetadata() {
-  try {
-    const response = await fetch(CONFIG.dataUrls.metadata);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    STATE.metadata = await response.json();
     
-    // Update UI with metadata
-    if (STATE.metadata) {
-      document.getElementById('lastUpdated').textContent = STATE.metadata.lastUpdated || 'June 2024';
-      document.getElementById('nextUpdate').textContent = STATE.metadata.nextUpdate || 'July 2024';
+    // Load GeoJSON data
+    const response = await fetch('./data/ADMIN1.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load GeoJSON data: ${response.status}`);
     }
-  } catch (error) {
-    console.error("Error loading metadata:", error);
-    // Continue without metadata
-  }
-}
-
-// Load population data
-async function loadPopulationData() {
-  showLoading('population-distribution-map');
-  
-  try {
-    const response = await fetch(CONFIG.dataUrls.geojson);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
-    const data = await response.json();
+    sudanStatesData = await response.json();
     
     // Sample population data - in a real app, this would come from your data source
     const populationData = {
-      "North Darfur": { idps: 1762447, returnees: 0, trend: [1500000, 1600000, 1700000, 1762447] },
-      "South Darfur": { idps: 1841031, returnees: 0, trend: [1700000, 1750000, 1800000, 1841031] },
-      "West Darfur": { idps: 329387, returnees: 0, trend: [300000, 310000, 320000, 329387] },
-      "East Darfur": { idps: 794348, returnees: 0, trend: [700000, 750000, 780000, 794348] },
-      "Central Darfur": { idps: 936057, returnees: 0, trend: [900000, 920000, 930000, 936057] },
-      "Khartoum": { idps: 106919, returnees: 34100, trend: [120000, 110000, 108000, 106919] },
-      "Aj Jazirah": { idps: 249740, returnees: 486730, trend: [230000, 240000, 245000, 249740] },
-      "White Nile": { idps: 634978, returnees: 0, trend: [600000, 620000, 630000, 634978] },
-      "Blue Nile": { idps: 428443, returnees: 0, trend: [400000, 410000, 420000, 428443] },
-      "Sennar": { idps: 122589, returnees: 126774, trend: [110000, 115000, 120000, 122589] },
-      "Kassala": { idps: 196056, returnees: 0, trend: [180000, 190000, 195000, 196056] },
-      "Red Sea": { idps: 226076, returnees: 0, trend: [200000, 210000, 220000, 226076] },
-      "Northern": { idps: 537981, returnees: 0, trend: [500000, 520000, 530000, 537981] },
-      "River Nile": { idps: 716434, returnees: 0, trend: [680000, 700000, 710000, 716434] },
-      "North Kordofan": { idps: 203416, returnees: 0, trend: [190000, 200000, 202000, 203416] },
-      "South Kordofan": { idps: 401433, returnees: 0, trend: [380000, 390000, 400000, 401433] },
-      "West Kordofan": { idps: 349800, returnees: 0, trend: [330000, 340000, 345000, 349800] },
-      "Gedaref": { idps: 701825, returnees: 0, trend: [650000, 680000, 700000, 701825] }
+      "North Darfur": { 
+        idps: 1762447, 
+        returnees: 0,
+        trend: [1500000, 1600000, 1700000, 1762447]
+      },
+      "South Darfur": { 
+        idps: 1841031, 
+        returnees: 0,
+        trend: [1700000, 1750000, 1800000, 1841031]
+      },
+      "West Darfur": { 
+        idps: 329387, 
+        returnees: 0,
+        trend: [300000, 310000, 320000, 329387]
+      },
+      "East Darfur": { 
+        idps:794348, 
+        returnees: 0,
+        trend: [700000, 750000, 780000, 794348]
+      },
+      "Central Darfur": { 
+        idps: 936057, 
+        returnees:0,
+        trend: [900000, 920000, 930000, 936057]
+      },
+      "Khartoum": { 
+        idps: 106919, 
+        returnees:  34100,
+        trend: [120000, 110000, 108000, 106919]
+      },
+      "Aj Jazirah": { 
+        idps: 249740, 
+        returnees: 486730,
+        trend: [230000, 240000, 245000, 249740]
+      },
+      "White Nile": { 
+        idps: 634978, 
+        returnees: 0,
+        trend: [600000, 620000, 630000, 634978]
+      },
+      "Blue Nile": { 
+        idps: 428443, 
+        returnees: 0,
+        trend: [400000, 410000, 420000, 428443]
+      },
+      "Sennar": { 
+        idps: 122589, 
+        returnees: 126774,
+        trend: [110000, 115000, 120000, 122589]
+      },
+      "Kassala": { 
+        idps: 196056, 
+        returnees: 0,
+        trend: [180000, 190000, 195000, 196056]
+      },
+      "Red Sea": { 
+        idps: 226076, 
+        returnees: 0,
+        trend: [200000, 210000, 220000, 226076]
+      },
+      "Northern": { 
+        idps:537981, 
+        returnees: 0,
+        trend: [500000, 520000, 530000, 537981]
+      },
+      "River Nile": { 
+        idps: 716434, 
+        returnees:  0,
+        trend: [680000, 700000, 710000, 716434]
+      },
+      "North Kordofan": { 
+        idps: 203416, 
+        returnees: 0,
+        trend: [190000, 200000, 202000, 203416]
+      },
+      "South Kordofan": { 
+        idps: 401433, 
+        returnees: 0,
+        trend: [380000, 390000, 400000, 401433]
+      },
+      "West Kordofan": { 
+        idps: 349800, 
+        returnees: 0,
+        trend: [330000, 340000, 345000, 349800]
+      },
+      "Gedaref": { 
+        idps: 701825, 
+        returnees: 0,
+        trend: [650000, 680000, 700000, 701825]
+      }
     };
     
     // Calculate totals for the summary cards
@@ -392,16 +1070,13 @@ async function loadPopulationData() {
     });
     
     // Update summary cards
-    document.getElementById('totalIdps').textContent = totalIDPs.toLocaleString();
-    document.getElementById('totalReturnees').textContent = totalReturnees.toLocaleString();
-    
-    // Set trend changes (simplified for example)
-    document.getElementById('idpsChange').innerHTML = '<i class="fas fa-arrow-up"></i> 12% increase from last month';
-    document.getElementById('returneesChange').innerHTML = '<i class="fas fa-arrow-down"></i> 5% decrease from last month';
+    document.querySelector('.summary-card.idps .value').textContent = totalIDPs.toLocaleString();
+    document.querySelector('.summary-card.returnees .value').textContent = totalReturnees.toLocaleString();
     
     // Merge population data with GeoJSON features
-    data.features.forEach(feature => {
+    sudanStatesData.features.forEach(feature => {
       const stateName = feature.properties.admin1Name_en;
+      console.log(`Processing state: ${stateName}`);
       
       if (stateName && populationData[stateName]) {
         feature.properties.total_idps = populationData[stateName].idps || 0;
@@ -409,6 +1084,7 @@ async function loadPopulationData() {
         feature.properties.state = stateName;
         feature.properties.trend = populationData[stateName].trend || [];
       } else {
+        console.warn(`No population data found for state: ${stateName}`);
         feature.properties.total_idps = 0;
         feature.properties.total_returnees = 0;
         feature.properties.state = stateName || 'Unknown';
@@ -416,123 +1092,89 @@ async function loadPopulationData() {
       }
     });
     
-    STATE.populationData = data;
-    hideLoading('population-distribution-map');
-    
-  } catch (error) {
-    console.error("Error loading population data:", error);
-    showError('population-distribution-map', "Failed to load population data. Please try again later.");
-    throw error;
-  }
-}
-
-// Load flow data
-async function loadFlowData() {
-  showLoading('flow-map');
-  
-  try {
-    // Using PapaParse to load CSV
-    const data = await new Promise((resolve, reject) => {
-      Papa.parse(CONFIG.dataUrls.flowData, {
-        download: true,
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          if (results.errors.length > 0) {
-            reject(new Error("Error parsing flow data"));
-          } else {
-            resolve(results.data);
-          }
-        },
-        error: (error) => reject(error)
-      });
-    });
-    
-    STATE.flowData = processFlowData(data);
-    hideLoading('flow-map');
-    
-  } catch (error) {
-    console.error("Error loading flow data:", error);
-    showError('flow-map', "Failed to load flow data. Please try again later.");
-    throw error;
-  }
-}
-
-// Process flow data from CSV to GeoJSON format
-function processFlowData(data) {
-  return {
-    type: 'FeatureCollection',
-    features: data.map(datum => ({
-      type: 'Feature',
-      geometry: { 
-        type: 'Point', 
-        coordinates: [
-          parseFloat(datum.s_lon) || 0,
-          parseFloat(datum.s_lat) || 0
-        ] 
-      },
-      properties: {
-        s_state_id: datum.s_state_id,
-        s_State: datum.s_State,
-        s_lat: parseFloat(datum.s_lat) || 0,
-        s_lon: parseFloat(datum.s_lon) || 0,
-        e_locality_id: datum.e_locality_id,
-        e_locality: datum.e_locality,
-        e_lat: parseFloat(datum.e_lat) || 0,
-        e_lon: parseFloat(datum.e_lon) || 0,
-        e_Volume: parseFloat(datum.e_Volume) || 0,
-        main_needs: datum.main_needs
-      }
-    }))
-  };
-}
-
-// Initialize the Population Distribution map
-function initPopulationDistributionMap() {
-  if (!STATE.populationData) {
-    throw new Error("Population data not loaded");
-  }
-  
-  try {
-    // Initialize the map
-    DOM.populationMap = L.map('population-distribution-map', {
+    // Initialize the population map
+    populationMap = L.map('population-distribution-map', {
       zoomControl: false,
-      attributionControl: false,
-      maxBounds: CONFIG.mapSettings.maxBounds,
-      maxBoundsViscosity: 1.0
-    }).setView(
-      CONFIG.mapSettings.initialView,
-      L.Browser.mobile ? CONFIG.mapSettings.mobileZoom : CONFIG.mapSettings.populationZoom
-    );
+      attributionControl: false
+    }).setView([16, 30], L.Browser.mobile ? 3 : 6);
     
-    // Add zoom control
-    L.control.zoom({ position: 'topright' }).addTo(DOM.populationMap);
+    // Add zoom control with a different position
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(populationMap);
     
-    // Add base layers
-    const baseLayers = {};
-    Object.entries(CONFIG.baseLayers).forEach(([name, url]) => {
-      baseLayers[name] = L.tileLayer(url, {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        tileSize: 512,
-        zoomOffset: -1,
-        maxZoom: 18
-      });
+    // Add the base layer
+    const mapboxCustom = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
+      attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      tileSize: 512,
+      zoomOffset: -1,
+      maxZoom: 18
+    }).addTo(populationMap);
+    
+    // Define multiple base layers for the map
+    const cartoDBLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     });
     
-    // Add default base layer
-    baseLayers["Mapbox Custom"].addTo(DOM.populationMap);
+    const openStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    
+    const esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+    });
     
     // Add layer control
+    const baseLayers = {
+      "Mapbox Custom": mapboxCustom,
+      "CartoDB Light": cartoDBLight,
+      "OpenStreetMap": openStreetMap,
+      "Esri World Imagery": esriWorldImagery
+    };
+    
     L.control.layers(baseLayers, null, {
       position: 'bottomleft',
       collapsed: false
-    }).addTo(DOM.populationMap);
+    }).addTo(populationMap);
+    
+    // Define color functions based on population type
+    function getColorForIDPs(d) {
+      return d > 1000000 ? '#084594' :
+             d > 500000  ? '#2171b5' :
+             d > 200000  ? '#4292c6' :
+             d > 100000  ? '#6baed6' :
+             d > 50000   ? '#9ecae1' :
+             d > 20000   ? '#c6dbef' :
+                           '#eff3ff';
+    }
+    
+    function getColorForReturnees(d) {
+      // Use RGB(255, 103, 31) for returnees with different opacities
+      return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
+             d > 500000  ? 'rgba(255, 103, 31, 0.8)' :
+             d > 200000  ? 'rgba(255, 103, 31, 0.7)' :
+             d > 100000  ? 'rgba(255, 103, 31, 0.6)' :
+             d > 50000   ? 'rgba(255, 103, 31, 0.5)' :
+             d > 20000   ? 'rgba(255, 103, 31, 0.4)' :
+                           'rgba(255, 103, 31, 0.3)';
+    }
+    
+    // Main color function that selects the appropriate palette
+    function getColor(d) {
+      switch(currentDataType) {
+        case 'idps':
+          return getColorForIDPs(d);
+        case 'returnees':
+          return getColorForReturnees(d);
+        default:
+          return getColorForIDPs(d);
+      }
+    }
     
     // Define style function
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties[`total_${STATE.currentDataType}`] || 0),
+        fillColor: getColor(feature.properties[`total_${currentDataType}`] || 0),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -556,18 +1198,18 @@ function initPopulationDistributionMap() {
         layer.bringToFront();
       }
       
-      DOM.infoControl.update(layer.feature.properties);
+      info.update(layer.feature.properties);
       updateTrendChart(layer.feature.properties);
     }
     
     function resetHighlight(e) {
-      DOM.geojsonLayer.resetStyle(e.target);
-      DOM.infoControl.update();
+      geojsonLayer.resetStyle(e.target);
+      info.update();
       resetTrendChart();
     }
     
     function zoomToFeature(e) {
-      DOM.populationMap.fitBounds(e.target.getBounds(), {
+      populationMap.fitBounds(e.target.getBounds(), {
         padding: [50, 50],
         maxZoom: 8
       });
@@ -582,29 +1224,29 @@ function initPopulationDistributionMap() {
     }
     
     // Add GeoJSON layer
-    DOM.geojsonLayer = L.geoJSON(STATE.populationData, {
+    geojsonLayer = L.geoJSON(sudanStatesData, {
       style: style,
       onEachFeature: onEachFeature
-    }).addTo(DOM.populationMap);
+    }).addTo(populationMap);
     
     // Fit map to bounds of all features
-    DOM.populationMap.fitBounds(DOM.geojsonLayer.getBounds(), {
+    populationMap.fitBounds(geojsonLayer.getBounds(), {
       padding: [50, 50]
     });
     
     // Add info control
-    DOM.infoControl = L.control({ position: 'topleft' });
+    const info = L.control({position: 'topleft'});
     
-    DOM.infoControl.onAdd = function() {
+    info.onAdd = function(map) {
       this._div = L.DomUtil.create('div', 'info');
       this.update();
       return this._div;
     };
     
-    DOM.infoControl.update = function(props) {
+    info.update = function(props) {
       let title, valueLabel;
       
-      switch(STATE.currentDataType) {
+      switch(currentDataType) {
         case 'idps':
           title = 'IDP Distribution';
           valueLabel = 'IDPs';
@@ -618,328 +1260,190 @@ function initPopulationDistributionMap() {
       this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
         (props ? 
           `<b>${props.state}</b><br />` + 
-          (props[`total_${STATE.currentDataType}`] || 0).toLocaleString() + 
+          (props[`total_${currentDataType}`] || 0).toLocaleString() + 
           ` ${valueLabel}` : 
           'Hover over a state');
     };
     
-    DOM.infoControl.addTo(DOM.populationMap);
+    info.addTo(populationMap);
+    
+    // Function to update map display based on selected data type
+    function updateMapDisplay(dataType) {
+      currentDataType = dataType;
+      
+      // Update the legend
+      if (legend) {
+        legend.remove();
+        legend.addTo(populationMap);
+      }
+      
+      // Update the style and info display
+      geojsonLayer.setStyle(feature => {
+        const value = feature.properties[`total_${dataType}`] || 0;
+        return {
+          fillColor: getColor(value),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+        };
+      });
+      
+      // Update the info control function
+      info.update = function(props) {
+        let title, valueLabel;
+        
+        switch(dataType) {
+          case 'idps':
+            title = 'IDP Distribution';
+            valueLabel = 'IDPs';
+            break;
+          case 'returnees':
+            title = 'Returnee Distribution';
+            valueLabel = 'Returnees';
+            break;
+        }
+        
+        this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
+          (props ? 
+            `<b>${props.state}</b><br />` + 
+            (props[`total_${dataType}`] || 0).toLocaleString() + 
+            ` ${valueLabel}` : 
+            'Hover over a state');
+      };
+      
+      // Trigger an update for the info control
+      info.update();
+    }
+    
+    // Add toggle buttons functionality
+    const toggleButtons = document.querySelectorAll('.population-toggle .toggle-btn');
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        toggleButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to the clicked button
+        button.classList.add('active');
+        // Update the map display
+        updateMapDisplay(button.dataset.type);
+      });
+    });
     
     // Add legend control
-    DOM.legendControl = L.control({ position: 'bottomright' });
+    const legend = L.control({position: 'bottomright'});
     
-    DOM.legendControl.onAdd = function() {
+    legend.onAdd = function(map) {
       const div = L.DomUtil.create('div', 'info legend population-legend');
-      updateLegend(div);
+      let grades, title, colorFunc;
+      
+      switch(currentDataType) {
+        case 'idps':
+          grades = [0, 50000, 100000, 200000, 500000, 1000000];
+          title = 'IDPs';
+          colorFunc = getColorForIDPs;
+          break;
+        case 'returnees':
+          grades = [0, 50000, 100000, 200000, 500000, 1000000];
+          title = 'Returnees';
+          colorFunc = getColorForReturnees;
+          break;
+      }
+      
+      div.innerHTML = `<h4>${title}</h4>`;
+      
+      // Loop through population intervals and generate a label with a colored square for each interval
+      for (let i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+          '<i style="background:' + colorFunc(grades[i] + 1) + '"></i> ' +
+          grades[i].toLocaleString() + (grades[i + 1] ? '&ndash;' + grades[i + 1].toLocaleString() + '<br>' : '+');
+      }
+      
       return div;
     };
     
-    DOM.legendControl.addTo(DOM.populationMap);
+    legend.addTo(populationMap);
     
-    // Initialize search functionality
-    initSearch();
+    // Implement search functionality
+    const stateSearch = document.getElementById('state-search');
+    const searchResults = document.getElementById('searchResults');
     
-  } catch (error) {
-    console.error("Error initializing population map:", error);
-    throw error;
-  }
-}
-
-// Initialize the flow map
-function initFlowMap() {
-  if (!STATE.flowData) {
-    throw new Error("Flow data not loaded");
-  }
-  
-  try {
-    // Initialize the flow map
-    DOM.flowMap = L.map('flow-map', {
-      zoomControl: false,
-      attributionControl: false,
-      maxBounds: CONFIG.mapSettings.maxBounds,
-      maxBoundsViscosity: 1.0
-    }).setView(CONFIG.mapSettings.initialView, CONFIG.mapSettings.flowZoom);
-    
-    // Add zoom control
-    L.control.zoom({ position: 'topright' }).addTo(DOM.flowMap);
-    
-    // Add base layers
-    const baseLayers = {};
-    Object.entries(CONFIG.baseLayers).forEach(([name, url]) => {
-      baseLayers[name] = L.tileLayer(url, {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        tileSize: 512,
-        zoomOffset: -1,
-        maxZoom: 18
-      });
-    });
-    
-    // Add default base layer
-    baseLayers["Mapbox Custom"].addTo(DOM.flowMap);
-    
-    // Add layer control
-    L.control.layers(baseLayers, null, {
-      position: 'bottomleft',
-      collapsed: false
-    }).addTo(DOM.flowMap);
-    
-    // State boundaries layer (for reference)
-    if (STATE.populationData) {
-      L.geoJSON(STATE.populationData, {
-        style: {
-          color: '#555',
-          weight: 1,
-          opacity: 0.7,
-          fillOpacity: 0.1
+    if (stateSearch && searchResults) {
+      stateSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        if (searchTerm.length < 2) {
+          searchResults.style.display = 'none';
+          return;
         }
-      }).addTo(DOM.flowMap);
-    }
-    
-    // Initialize flowmap layer
-    initializeFlowmapLayer();
-    
-  } catch (error) {
-    console.error("Error initializing flow map:", error);
-    throw error;
-  }
-}
-
-// Initialize flowmap layer with processed data
-function initializeFlowmapLayer() {
-  // Create flowmap layer
-  DOM.flowmapLayer = L.canvasFlowmapLayer(STATE.flowData, {
-    originAndDestinationFieldIds: {
-      originUniqueIdField: 's_state_id',
-      originGeometry: { x: 's_lon', y: 's_lat' },
-      destinationUniqueIdField: 'e_locality_id',
-      destinationGeometry: { x: 'e_lon', y: 'e_lat' }
-    },
-    style: (feature) => {
-      const baseRadius = 10;
-      const maxRadius = 6;
-      const volume = feature.properties.e_Volume || 0;
-      
-      // Different styles for origin and destination points
-      const radius = feature.properties.isOrigin
-        ? baseRadius
-        : Math.min(baseRadius + (volume / 5000), maxRadius);
-      
-      return {
-        radius: radius,
-        weight: 1,
-        color: '#fff',
-        fillColor: feature.properties.isOrigin ? CONFIG.colors.flow.origin : CONFIG.colors.flow.destination,
-        fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
-      };
-    },
-    canvasBezierStyle: {
-      type: 'classBreaks',
-      field: 'e_Volume',
-      classBreakInfos: [
-        { 
-          classMinValue: 1, 
-          classMaxValue: 80000, 
-          symbol: { 
-            strokeStyle: CONFIG.colors.flow.low, 
-            lineWidth: 0.5, 
-            lineCap: 'round', 
-            shadowColor: '#fee8c8', 
-            shadowBlur: 2.0 
-          } 
-        },
-        { 
-          classMinValue: 80001, 
-          classMaxValue: 1000000, 
-          symbol: { 
-            strokeStyle: CONFIG.colors.flow.medium, 
-            lineWidth: 1.5, 
-            lineCap: 'round', 
-            shadowColor: '#fdbb84', 
-            shadowBlur: 2.0 
-          } 
-        },
-        { 
-          classMinValue: 1000001, 
-          classMaxValue: 160000, 
-          symbol: { 
-            strokeStyle: CONFIG.colors.flow.high, 
-            lineWidth: 3, 
-            lineCap: 'round', 
-            shadowColor: '#e34a33', 
-            shadowBlur: 2.0 
-          } 
-        }
-      ],
-      defaultSymbol: { 
-        strokeStyle: '#e7e1ef', 
-        lineWidth: 0.5, 
-        lineCap: 'round', 
-        shadowColor: '#e7e1ef', 
-        shadowBlur: 1.5 
-      }
-    },
-    pathDisplayMode: 'all',
-    animationStarted: true,
-    animationEasingFamily: 'Linear',
-    animationEasingType: 'None',
-    animationDuration: 3000,
-    onEachFeature: addFlowTooltip
-  }).addTo(DOM.flowMap);
-  
-  // Set initial UI states
-  STATE.isAnimationPlaying = true;
-  STATE.showFlows = true;
-  STATE.showPoints = true;
-  updateAnimationButton();
-  updateFlowsButton();
-  updatePointsButton();
-  
-  // Highlight paths on mouseover
-  DOM.flowmapLayer.on('mouseover', (e) => {
-    if (e.sharedOriginFeatures.length) {
-      DOM.flowmapLayer.selectFeaturesForPathDisplay(e.sharedOriginFeatures, 'SELECTION_NEW');
-    }
-    if (e.sharedDestinationFeatures.length) {
-      DOM.flowmapLayer.selectFeaturesForPathDisplay(e.sharedDestinationFeatures, 'SELECTION_NEW');
-    }
-  });
-  
-  // Select initial feature for path display (Khartoum)
-  DOM.flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
-  
-  // Add flow legend
-  DOM.flowLegendControl = L.control({ position: 'bottomright' });
-  
-  DOM.flowLegendControl.onAdd = function() {
-    const div = L.DomUtil.create('div', 'flow-legend');
-    div.innerHTML = `
-      <h4>IDP Flow Volume</h4>
-      <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:${CONFIG.colors.flow.low}"></div>
-        <span>&lt; 80,000 IDPs</span>
-      </div>
-      <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:${CONFIG.colors.flow.medium}"></div>
-        <span>80,000 - 1M IDPs</span>
-      </div>
-      <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:${CONFIG.colors.flow.high}"></div>
-        <span>&gt; 1M IDPs</span>
-      </div>
-      <hr style="margin: 8px 0; border-color: #eee;">
-      <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:${CONFIG.colors.flow.destination}"></div>
-        <span>Destination Points</span>
-      </div>
-      <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:${CONFIG.colors.flow.origin}"></div>
-        <span>Origin Points</span>
-      </div>
-    `;
-    return div;
-  };
-  
-  DOM.flowLegendControl.addTo(DOM.flowMap);
-}
-
-// Initialize search functionality
-function initSearch() {
-  const stateSearch = document.getElementById('state-search');
-  const searchResults = document.getElementById('searchResults');
-  
-  if (!stateSearch || !searchResults) return;
-  
-  // Debounce search input
-  const debounceSearch = debounce(function() {
-    const searchTerm = this.value.toLowerCase().trim();
-    
-    if (searchTerm.length < 2) {
-      searchResults.style.display = 'none';
-      return;
-    }
-    
-    const matchingFeatures = STATE.populationData.features.filter(feature => {
-      return feature.properties.state.toLowerCase().includes(searchTerm);
-    });
-    
-    if (matchingFeatures.length > 0) {
-      searchResults.innerHTML = matchingFeatures.map(feature => {
-        return `<div role="option" data-state="${feature.properties.state}">${feature.properties.state}</div>`;
-      }).join('');
-      searchResults.style.display = 'block';
-    } else {
-      searchResults.innerHTML = '<div role="option">No matching states found</div>';
-      searchResults.style.display = 'block';
-    }
-  }, 300);
-  
-  stateSearch.addEventListener('input', debounceSearch);
-  
-  // Handle click on search results
-  searchResults.addEventListener('click', function(e) {
-    if (e.target.tagName === 'DIV' && e.target.dataset.state) {
-      const stateName = e.target.dataset.state;
-      stateSearch.value = stateName;
-      searchResults.style.display = 'none';
-      
-      // Find and zoom to the feature
-      const feature = STATE.populationData.features.find(f => f.properties.state === stateName);
-      if (feature) {
-        const layer = DOM.geojsonLayer.getLayers().find(l => l.feature.properties.state === stateName);
-        if (layer) {
-          DOM.populationMap.fitBounds(layer.getBounds(), {
-            padding: [50, 50],
-            maxZoom: 8
-          });
-          layer.fire('mouseover'); // Trigger hover effect
-        }
-      }
-    }
-  });
-  
-  // Close search results when clicking outside
-  document.addEventListener('click', function(e) {
-    if (e.target !== stateSearch) {
-      searchResults.style.display = 'none';
-    }
-  });
-  
-  // Keyboard navigation for search results
-  stateSearch.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      const options = searchResults.querySelectorAll('[role="option"]');
-      if (options.length === 0) return;
-      
-      let currentIndex = -1;
-      options.forEach((option, index) => {
-        if (option.classList.contains('highlighted')) {
-          currentIndex = index;
-          option.classList.remove('highlighted');
+        
+        const matchingFeatures = sudanStatesData.features.filter(feature => {
+          return feature.properties.state.toLowerCase().includes(searchTerm);
+        });
+        
+        if (matchingFeatures.length > 0) {
+          searchResults.innerHTML = matchingFeatures.map(feature => {
+            return `<div data-state="${feature.properties.state}">${feature.properties.state}</div>`;
+          }).join('');
+          searchResults.style.display = 'block';
+        } else {
+          searchResults.innerHTML = '<div>No matching states found</div>';
+          searchResults.style.display = 'block';
         }
       });
       
-      if (e.key === 'ArrowDown') {
-        currentIndex = (currentIndex + 1) % options.length;
-      } else {
-        currentIndex = (currentIndex - 1 + options.length) % options.length;
-      }
+      // Handle click on search results
+      searchResults.addEventListener('click', function(e) {
+        if (e.target.tagName === 'DIV' && e.target.dataset.state) {
+          const stateName = e.target.dataset.state;
+          stateSearch.value = stateName;
+          searchResults.style.display = 'none';
+          
+          // Find and zoom to the feature
+          const feature = sudanStatesData.features.find(f => f.properties.state === stateName);
+          if (feature) {
+            const layer = geojsonLayer.getLayers().find(l => l.feature.properties.state === stateName);
+            if (layer) {
+              populationMap.fitBounds(layer.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 8
+              });
+              layer.fire('mouseover'); // Trigger hover effect
+            }
+          }
+        }
+      });
       
-      options[currentIndex].classList.add('highlighted');
-      options[currentIndex].scrollIntoView({ block: 'nearest' });
-    } else if (e.key === 'Enter') {
-      const highlighted = searchResults.querySelector('.highlighted');
-      if (highlighted) {
-        highlighted.click();
-      }
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (e.target !== stateSearch) {
+          searchResults.style.display = 'none';
+        }
+      });
     }
-  });
+    
+    // Hide loading state
+    if (loadingElement) loadingElement.style.display = 'none';
+    
+    console.log("Population Distribution Map initialized successfully");
+    
+  } catch (error) {
+    console.error("Error initializing Population Distribution Map:", error);
+    const mapElement = document.getElementById('population-distribution-map');
+    if (mapElement) {
+      mapElement.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error loading map data. Please try again later.</p>';
+    }
+    // Hide loading state on error
+    const loadingElement = document.getElementById('map-loading');
+    if (loadingElement) loadingElement.style.display = 'none';
+  }
 }
 
 // Initialize trend chart
 function initTrendChart() {
   const ctx = document.getElementById('trendChart').getContext('2d');
   
-  DOM.trendChart = new Chart(ctx, {
+  trendChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: ['Mar', 'Apr', 'May', 'Jun'],
@@ -1022,29 +1526,325 @@ function initTrendChart() {
 function updateTrendChart(props) {
   if (!props || !props.trend || props.trend.length === 0) return;
   
-  DOM.trendChart.data.datasets[0].data = props.trend;
-  DOM.trendChart.data.datasets[1].data = [];
-  DOM.trendChart.update();
+  trendChart.data.datasets[0].data = props.trend;
+  trendChart.data.datasets[1].data = [];
+  trendChart.update();
 }
 
 // Reset trend chart to show national data
 function resetTrendChart() {
-  DOM.trendChart.data.datasets[0].data = [8000000, 8500000, 9200000, 9842000];
-  DOM.trendChart.data.datasets[1].data = [550000, 600000, 620000, 647604];
-  DOM.trendChart.update();
+  trendChart.data.datasets[0].data = [8000000, 8500000, 9200000, 9842000];
+  trendChart.data.datasets[1].data = [550000, 600000, 620000, 647604];
+  trendChart.update();
 }
 
-// Update insights based on current data
-function updateInsights() {
-  const insightsContainer = document.getElementById('insightsContainer');
-  if (!insightsContainer) return;
+// Initialize the flow map
+function initFlowMap() {
+  if (flowMap) return; // Already initialized
   
-  // In a real app, these would be generated from the data
-  insightsContainer.innerHTML = `
-    <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
-    <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
-    <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
-  `;
+  console.log("Initializing Flow Map");
+  
+  try {
+    // Show loading state
+    const loadingElement = document.getElementById('map-loading');
+    if (loadingElement) loadingElement.style.display = 'flex';
+    
+    // Initialize the flow map
+    flowMap = L.map('flow-map', {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([16, 30], 5.5);
+    
+    // Add zoom control with a different position
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(flowMap);
+    
+    // Add the base layer
+    const mapboxCustom = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
+      attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      tileSize: 512,
+      zoomOffset: -1,
+      maxZoom: 18
+    }).addTo(flowMap);
+    
+    // Define multiple base layers for the map
+    const cartoDBLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    
+    const openStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    
+    const esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+    });
+    
+    // Add layer control
+    const baseLayers = {
+      "Mapbox Custom": mapboxCustom,
+      "CartoDB Light": cartoDBLight,
+      "OpenStreetMap": openStreetMap,
+      "Esri World Imagery": esriWorldImagery
+    };
+    
+    L.control.layers(baseLayers, null, {
+      position: 'bottomleft',
+      collapsed: false
+    }).addTo(flowMap);
+    
+    // State boundaries layer (for reference)
+    if (sudanStatesData) {
+      L.geoJSON(sudanStatesData, {
+        style: {
+          color: '#555',
+          weight: 1,
+          opacity: 0.7,
+          fillOpacity: 0.1
+        }
+      }).addTo(flowMap);
+    }
+    
+    // Load flow data from CSV
+    Papa.parse('./data/IDPs_Pathway.csv', {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        // Process the data to ensure it's in the correct format
+        const processedData = processFlowData(results.data);
+        initializeFlowmapLayer(processedData);
+        
+        // Hide loading state
+        if (loadingElement) loadingElement.style.display = 'none';
+      },
+      error: function(error) {
+        console.error('Error loading flow data:', error);
+        if (loadingElement) {
+          loadingElement.innerHTML = '<div style="color: red; text-align: center;">Error loading flow data. Please try again later.</div>';
+        }
+      }
+    });
+    
+    // Add flow control event handlers
+    document.getElementById('resetFlowView').addEventListener('click', function() {
+      flowMap.setView([16, 30], 5.5);
+    });
+    
+    document.getElementById('toggleAnimation').addEventListener('click', function() {
+      isAnimationPlaying = !isAnimationPlaying;
+      this.classList.toggle('active');
+      
+      if (flowmapLayer) {
+        flowmapLayer.setAnimationStarted(isAnimationPlaying);
+        updateAnimationButton();
+      }
+    });
+    
+    document.getElementById('toggleFlows').addEventListener('click', function() {
+      showFlows = !showFlows;
+      this.classList.toggle('active');
+      
+      if (flowmapLayer) {
+        flowmapLayer.setPathDisplayMode(showFlows ? 'all' : 'none');
+      }
+      updateFlowsButton();
+    });
+    
+    document.getElementById('togglePoints').addEventListener('click', function() {
+      showPoints = !showPoints;
+      this.classList.toggle('active');
+      
+      if (flowmapLayer) {
+        flowmapLayer.setPointVisibility(showPoints);
+      }
+      updatePointsButton();
+    });
+    
+    console.log("Flow Map initialized successfully");
+    
+  } catch (error) {
+    console.error("Error initializing Flow Map:", error);
+    const mapElement = document.getElementById('flow-map');
+    if (mapElement) {
+      mapElement.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error loading flow data. Please try again later.</p>';
+    }
+    // Hide loading state on error
+    const loadingElement = document.getElementById('map-loading');
+    if (loadingElement) loadingElement.style.display = 'none';
+  }
+}
+
+// Process flow data from CSV to GeoJSON format
+function processFlowData(data) {
+  // Convert CSV data to GeoJSON format
+  const geoJsonFeatureCollection = {
+    type: 'FeatureCollection',
+    features: data.map(datum => ({
+      type: 'Feature',
+      geometry: { 
+        type: 'Point', 
+        coordinates: [
+          parseFloat(datum.s_lon) || 0,
+          parseFloat(datum.s_lat) || 0
+        ] 
+      },
+      properties: {
+        s_state_id: datum.s_state_id,
+        s_State: datum.s_State,
+        s_lat: parseFloat(datum.s_lat) || 0,
+        s_lon: parseFloat(datum.s_lon) || 0,
+        e_locality_id: datum.e_locality_id,
+        e_locality: datum.e_locality,
+        e_lat: parseFloat(datum.e_lat) || 0,
+        e_lon: parseFloat(datum.e_lon) || 0,
+        e_Volume: parseFloat(datum.e_Volume) || 0,
+        main_needs: datum.main_needs
+      }
+    }))
+  };
+  
+  return geoJsonFeatureCollection;
+}
+
+// Initialize the flowmap layer with processed data
+function initializeFlowmapLayer(data) {
+  // Create flowmap layer
+  flowmapLayer = L.canvasFlowmapLayer(data, {
+    originAndDestinationFieldIds: {
+      originUniqueIdField: 's_state_id',
+      originGeometry: { x: 's_lon', y: 's_lat' },
+      destinationUniqueIdField: 'e_locality_id',
+      destinationGeometry: { x: 'e_lon', y: 'e_lat' }
+    },
+    style: (feature) => {
+      const baseRadius = 10;
+      const maxRadius = 6;
+      const volume = feature.properties.e_Volume || 0;
+      
+      // Different styles for origin and destination points
+      const radius = feature.properties.isOrigin
+        ? baseRadius
+        : Math.min(baseRadius + (volume / 5000), maxRadius);
+      
+      return {
+        radius: radius,
+        weight: 1,
+        color: '#fff',
+        fillColor: feature.properties.isOrigin ? '#ff671f' : '#418FDE',
+        fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
+      };
+    },
+    canvasBezierStyle: {
+      type: 'classBreaks',
+      field: 'e_Volume',
+      classBreakInfos: [
+        { 
+          classMinValue: 1, 
+          classMaxValue: 80000, 
+          symbol: { 
+            strokeStyle: '#ffb81c', 
+            lineWidth: 0.5, 
+            lineCap: 'round', 
+            shadowColor: '#fee8c8', 
+            shadowBlur: 2.0 
+          } 
+        },
+        { 
+          classMinValue: 80001, 
+          classMaxValue: 1000000, 
+          symbol: { 
+            strokeStyle: '#ff671f', 
+            lineWidth: 1.5, 
+            lineCap: 'round', 
+            shadowColor: '#fdbb84', 
+            shadowBlur: 2.0 
+          } 
+        },
+        { 
+          classMinValue: 1000001, 
+          classMaxValue: 160000, 
+          symbol: { 
+            strokeStyle: '#d22630', 
+            lineWidth: 3, 
+            lineCap: 'round', 
+            shadowColor: '#e34a33', 
+            shadowBlur: 2.0 
+          } 
+        }
+      ],
+      defaultSymbol: { 
+        strokeStyle: '#e7e1ef', 
+        lineWidth: 0.5, 
+        lineCap: 'round', 
+        shadowColor: '#e7e1ef', 
+        shadowBlur: 1.5 
+      }
+    },
+    pathDisplayMode: 'all',
+    animationStarted: true,
+    animationEasingFamily: 'Linear',
+    animationEasingType: 'None',
+    animationDuration: 3000,
+    onEachFeature: addFlowTooltip
+  }).addTo(flowMap);
+  
+  // Set initial UI states
+  isAnimationPlaying = true;
+  showFlows = true;
+  showPoints = true;
+  updateAnimationButton();
+  updateFlowsButton();
+  updatePointsButton();
+  
+  // Highlight paths on mouseover
+  flowmapLayer.on('mouseover', (e) => {
+    if (e.sharedOriginFeatures.length) {
+      flowmapLayer.selectFeaturesForPathDisplay(e.sharedOriginFeatures, 'SELECTION_NEW');
+    }
+    if (e.sharedDestinationFeatures.length) {
+      flowmapLayer.selectFeaturesForPathDisplay(e.sharedDestinationFeatures, 'SELECTION_NEW');
+    }
+  });
+  
+  // Select initial feature for path display (Khartoum)
+  flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
+  
+  // Add flow legend
+  const flowLegend = L.control({position: 'bottomright'});
+  
+  flowLegend.onAdd = function() {
+    const div = L.DomUtil.create('div', 'flow-legend');
+    div.innerHTML = `
+      <h4>IDP Flow Volume</h4>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ffb81c"></div>
+        <span>&lt; 80,000 IDPs</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ff671f"></div>
+        <span>80,000 - 1M IDPs</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#d22630"></div>
+        <span>&gt; 1M IDPs</span>
+      </div>
+      <hr style="margin: 8px 0; border-color: #eee;">
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#418FDE"></div>
+        <span>Destination Points</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-color" style="background:#ff671f"></div>
+        <span>Origin Points</span>
+      </div>
+    `;
+    return div;
+  };
+  
+  flowLegend.addTo(flowMap);
 }
 
 // Add tooltip and popup to flow features
@@ -1075,102 +1875,12 @@ function addFlowTooltip(feature, layer) {
   layer.bindPopup(popupContent);
 }
 
-// Get color based on value and current data type
-function getColor(d) {
-  const colorScale = STATE.currentDataType === 'idps' ? CONFIG.colors.idps : CONFIG.colors.returnees;
-  
-  return d > 1000000 ? colorScale[6] :
-         d > 500000  ? colorScale[5] :
-         d > 200000  ? colorScale[4] :
-         d > 100000  ? colorScale[3] :
-         d > 50000   ? colorScale[2] :
-         d > 20000   ? colorScale[1] :
-                       colorScale[0];
-}
-
-// Update legend content
-function updateLegend(legendDiv) {
-  let grades, title, colorScale;
-  
-  switch(STATE.currentDataType) {
-    case 'idps':
-      grades = [0, 50000, 100000, 200000, 500000, 1000000];
-      title = 'IDPs';
-      colorScale = CONFIG.colors.idps;
-      break;
-    case 'returnees':
-      grades = [0, 50000, 100000, 200000, 500000, 1000000];
-      title = 'Returnees';
-      colorScale = CONFIG.colors.returnees;
-      break;
-  }
-  
-  legendDiv.innerHTML = `<h4>${title}</h4>`;
-  
-  // Loop through population intervals and generate a label with a colored square for each interval
-  for (let i = 0; i < grades.length; i++) {
-    legendDiv.innerHTML +=
-      '<i style="background:' + colorScale[i + 1] + '"></i> ' +
-      grades[i].toLocaleString() + (grades[i + 1] ? '&ndash;' + grades[i + 1].toLocaleString() + '<br>' : '+');
-  }
-}
-
-// Update map display based on selected data type
-function updateMapDisplay(dataType) {
-  STATE.currentDataType = dataType;
-  
-  // Update the legend
-  if (DOM.legendControl) {
-    const legendDiv = DOM.legendControl.getContainer();
-    if (legendDiv) updateLegend(legendDiv);
-  }
-  
-  // Update the style and info display
-  DOM.geojsonLayer.setStyle(feature => {
-    const value = feature.properties[`total_${dataType}`] || 0;
-    return {
-      fillColor: getColor(value),
-      weight: 2,
-      opacity: 1,
-      color: 'white',
-      dashArray: '3',
-      fillOpacity: 0.7
-    };
-  });
-  
-  // Update the info control function
-  DOM.infoControl.update = function(props) {
-    let title, valueLabel;
-    
-    switch(dataType) {
-      case 'idps':
-        title = 'IDP Distribution';
-        valueLabel = 'IDPs';
-        break;
-      case 'returnees':
-        title = 'Returnee Distribution';
-        valueLabel = 'Returnees';
-        break;
-    }
-    
-    this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
-      (props ? 
-        `<b>${props.state}</b><br />` + 
-        (props[`total_${dataType}`] || 0).toLocaleString() + 
-        ` ${valueLabel}` : 
-        'Hover over a state');
-  };
-  
-  // Trigger an update for the info control
-  DOM.infoControl.update();
-}
-
 // Update animation button state
 function updateAnimationButton() {
   const button = document.getElementById('toggleAnimation');
   const icon = button.querySelector('i');
   
-  if (STATE.isAnimationPlaying) {
+  if (isAnimationPlaying) {
     icon.className = 'fas fa-pause';
     button.innerHTML = '<i class="fas fa-pause"></i> Pause';
   } else {
@@ -1182,182 +1892,17 @@ function updateAnimationButton() {
 // Update flows button state
 function updateFlowsButton() {
   const button = document.getElementById('toggleFlows');
-  button.innerHTML = `<i class="fas fa-wave-square"></i> ${STATE.showFlows ? 'Hide' : 'Show'} Flows`;
+  button.innerHTML = `<i class="fas fa-wave-square"></i> ${showFlows ? 'Hide' : 'Show'} Flows`;
 }
 
 // Update points button state
 function updatePointsButton() {
   const button = document.getElementById('togglePoints');
-  button.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${STATE.showPoints ? 'Hide' : 'Show'} Points`;
+  button.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${showPoints ? 'Hide' : 'Show'} Points`;
 }
 
-// Set up event listeners
-function setupEventListeners() {
-  // Tab switching functionality
-  document.querySelectorAll('.map-tab').forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      document.querySelectorAll('.map-tab').forEach(btn => btn.classList.remove('active'));
-      // Add active class to the clicked button
-      button.classList.add('active');
-      
-      // Show the appropriate map
-      const tab = button.dataset.tab;
-      if (tab === 'population') {
-        document.getElementById('population-distribution-map').style.display = 'block';
-        document.getElementById('flow-map').style.display = 'none';
-        document.getElementById('populationToggle').style.display = 'flex';
-        document.getElementById('flowControls').style.display = 'none';
-        document.getElementById('mapTitle').innerHTML = '<i class="fas fa-map-marked-alt"></i> Population Distribution Map';
-      } else if (tab === 'flow') {
-        document.getElementById('population-distribution-map').style.display = 'none';
-        document.getElementById('flow-map').style.display = 'block';
-        document.getElementById('populationToggle').style.display = 'none';
-        document.getElementById('flowControls').style.display = 'flex';
-        document.getElementById('mapTitle').innerHTML = '<i class="fas fa-project-diagram"></i> IDP Pathways Flow Map';
-        
-        // Initialize flow map if not already done
-        if (!DOM.flowMap) {
-          initFlowMap();
-        }
-      }
-    });
-  });
-  
-  // Toggle buttons functionality
-  document.querySelectorAll('.population-toggle .toggle-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      document.querySelectorAll('.population-toggle .toggle-btn').forEach(btn => btn.classList.remove('active'));
-      // Add active class to the clicked button
-      button.classList.add('active');
-      // Update the map display
-      updateMapDisplay(button.dataset.type);
-    });
-  });
-  
-  // Time period selector
-  document.querySelectorAll('.time-period-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      document.querySelectorAll('.time-period-btn').forEach(btn => btn.classList.remove('active'));
-      // Add active class to the clicked button
-      button.classList.add('active');
-      
-      // Update trend chart based on period
-      STATE.trendPeriod = button.dataset.period;
-      updateTrendPeriod();
-    });
-  });
-  
-  // Flow map controls
-  document.getElementById('resetFlowView').addEventListener('click', () => {
-    if (DOM.flowMap) {
-      DOM.flowMap.setView(CONFIG.mapSettings.initialView, CONFIG.mapSettings.flowZoom);
-    }
-  });
-  
-  document.getElementById('toggleAnimation').addEventListener('click', () => {
-    STATE.isAnimationPlaying = !STATE.isAnimationPlaying;
-    if (DOM.flowmapLayer) {
-      DOM.flowmapLayer.setAnimationStarted(STATE.isAnimationPlaying);
-    }
-    updateAnimationButton();
-  });
-  
-  document.getElementById('toggleFlows').addEventListener('click', () => {
-    STATE.showFlows = !STATE.showFlows;
-    if (DOM.flowmapLayer) {
-      DOM.flowmapLayer.setPathDisplayMode(STATE.showFlows ? 'all' : 'none');
-    }
-    updateFlowsButton();
-  });
-  
-  document.getElementById('togglePoints').addEventListener('click', () => {
-    STATE.showPoints = !STATE.showPoints;
-    if (DOM.flowmapLayer) {
-      DOM.flowmapLayer.setPointVisibility(STATE.showPoints);
-    }
-    updatePointsButton();
-  });
-  
-  // Export button
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    // In a real app, this would export data or images
-    alert('Export functionality would be implemented here');
-  });
-}
-
-// Update trend chart based on selected period
-function updateTrendPeriod() {
-  // In a real app, this would fetch different time periods of data
-  console.log(`Updating trend chart for ${STATE.trendPeriod} months`);
-}
-
-// Show loading state for a map
-function showLoading(mapId) {
-  const mapElement = document.getElementById(mapId);
-  if (mapElement) {
-    mapElement.style.display = 'none';
-  }
-  
-  const loadingElement = document.getElementById('map-loading');
-  if (loadingElement) {
-    loadingElement.style.display = 'flex';
-  }
-  
-  const errorElement = document.getElementById('map-error');
-  if (errorElement) {
-    errorElement.style.display = 'none';
-  }
-}
-
-// Hide loading state for a map
-function hideLoading(mapId) {
-  const mapElement = document.getElementById(mapId);
-  if (mapElement) {
-    mapElement.style.display = 'block';
-  }
-  
-  const loadingElement = document.getElementById('map-loading');
-  if (loadingElement) {
-    loadingElement.style.display = 'none';
-  }
-}
-
-// Show error state for a map
-function showError(mapId, message) {
-  const mapElement = document.getElementById(mapId);
-  if (mapElement) {
-    mapElement.style.display = 'none';
-  }
-  
-  const loadingElement = document.getElementById('map-loading');
-  if (loadingElement) {
-    loadingElement.style.display = 'none';
-  }
-  
-  const errorElement = document.getElementById('map-error');
-  if (errorElement) {
-    errorElement.style.display = 'flex';
-    if (message) {
-      errorElement.querySelector('p').textContent = message;
-    }
-  }
-}
-
-// Debounce function for search input
-function debounce(func, wait) {
-  let timeout;
-  return function() {
-    const context = this;
-    const args = arguments;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      func.apply(context, args);
-    }, wait);
-  };
-}
+// Call the initialization function when the DOM is ready
+document.addEventListener('DOMContentLoaded', initPopulationDistributionMap);
 </script>
 </body>
 </html>
