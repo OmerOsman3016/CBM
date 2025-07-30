@@ -108,9 +108,9 @@
       height: calc(100vh - var(--header-height));
     }
     
-    /* Sidebar styles */
+    /* Sidebar styles - Increased width */
     .sidebar {
-      width: 350px;
+      width: 420px; /* Increased from 350px */
       background-color: white;
       padding: 20px;
       border-right: 1px solid var(--medium-gray);
@@ -522,11 +522,19 @@
       background: #d1d9e6;
     }
     
-    /* Chart container */
+    /* Chart container - Made larger */
     .chart-container {
       margin-top: 15px;
-      height: 200px;
+      height: 250px; /* Increased from 200px */
       position: relative;
+    }
+    
+    /* New state displacement chart container */
+    .state-displacement-chart-container {
+      margin-top: 20px;
+      height: 300px; /* Larger chart */
+      position: relative;
+      display: none; /* Initially hidden */
     }
     
     /* Time period selector */
@@ -559,7 +567,7 @@
     /* Responsive adjustments */
     @media (max-width: 1200px) {
       .sidebar {
-        width: 320px;
+        width: 380px; /* Adjusted from 320px */
         padding: 15px;
       }
       
@@ -575,7 +583,7 @@
     @media (max-width: 992px) {
       .sidebar {
         position: absolute;
-        left: -350px;
+        left: -420px; /* Adjusted from -350px */
         top: var(--header-height);
         bottom: 0;
         z-index: 100;
@@ -820,6 +828,16 @@
         </div>
       </div>
       
+      <!-- New State Displacement Chart Section -->
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-chart-bar"></i> State of Displacement
+        </h2>
+        <div class="state-displacement-chart-container">
+          <canvas id="stateDisplacementChart"></canvas>
+        </div>
+      </div>
+      
       <div class="sidebar-section">
         <h2 class="sidebar-title">
           <i class="fas fa-map-marked-alt"></i> Map Controls
@@ -907,6 +925,29 @@ let showFlows = true;
 let showPoints = true;
 let sudanStatesData;
 let trendChart;
+let stateDisplacementChart;
+
+// State displacement data
+const stateDisplacementData = {
+  "Aj Jazirah": { code: "SD15", idps: 139842 },
+  "Blue Nile": { code: "SD08", idps: 405553 },
+  "Central Darfur": { code: "SD06", idps: 970797 },
+  "East Darfur": { code: "SD05", idps: 802944 },
+  "Gedaref": { code: "SD12", idps: 475315 },
+  "Kassala": { code: "SD11", idps: 118605 },
+  "Khartoum": { code: "SD01", idps: 230326 },
+  "North Darfur": { code: "SD02", idps: 1794860 },
+  "North Kordofan": { code: "SD13", idps: 218478 },
+  "Northern": { code: "SD17", idps: 530127 },
+  "Red Sea": { code: "SD10", idps: 178582 },
+  "River Nile": { code: "SD16", idps: 585975 },
+  "Sennar": { code: "SD14", idps: 92484 },
+  "South Darfur": { code: "SD03", idps: 1842960 },
+  "South Kordofan": { code: "SD07", idps: 392118 },
+  "West Darfur": { code: "SD04", idps: 347342 },
+  "West Kordofan": { code: "SD18", idps: 395260 },
+  "White Nile": { code: "SD09", idps: 543761 }
+};
 
 // Function to initialize the Population Distribution map
 async function initPopulationDistributionMap() {
@@ -919,6 +960,9 @@ async function initPopulationDistributionMap() {
     
     // Initialize trend chart
     initTrendChart();
+    
+    // Initialize state displacement chart
+    initStateDisplacementChart();
     
     // Toggle sidebar on mobile
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -1200,12 +1244,14 @@ async function initPopulationDistributionMap() {
       
       info.update(layer.feature.properties);
       updateTrendChart(layer.feature.properties);
+      updateStateDisplacementChart(layer.feature.properties.state);
     }
     
     function resetHighlight(e) {
       geojsonLayer.resetStyle(e.target);
       info.update();
       resetTrendChart();
+      resetStateDisplacementChart();
     }
     
     function zoomToFeature(e) {
@@ -1522,6 +1568,79 @@ function initTrendChart() {
   });
 }
 
+// Initialize state displacement chart
+function initStateDisplacementChart() {
+  const ctx = document.getElementById('stateDisplacementChart').getContext('2d');
+  
+  // Show the chart container
+  document.querySelector('.state-displacement-chart-container').style.display = 'block';
+  
+  // Prepare data for the chart
+  const states = Object.keys(stateDisplacementData);
+  const idpsData = states.map(state => stateDisplacementData[state].idps);
+  
+  stateDisplacementChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: states,
+      datasets: [{
+        label: 'IDPs by State',
+        data: idpsData,
+        backgroundColor: '#2A6FBB',
+        borderColor: '#1a4d8c',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.raw.toLocaleString() + ' IDPs';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+              } else if (value >= 1000) {
+                return (value / 1000).toFixed(0) + 'K';
+              }
+              return value;
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            display: false // Hide x-axis labels initially
+          }
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    }
+  });
+}
+
 // Update trend chart when hovering over a state
 function updateTrendChart(props) {
   if (!props || !props.trend || props.trend.length === 0) return;
@@ -1536,6 +1655,46 @@ function resetTrendChart() {
   trendChart.data.datasets[0].data = [8000000, 8500000, 9200000, 9842000];
   trendChart.data.datasets[1].data = [550000, 600000, 620000, 647604];
   trendChart.update();
+}
+
+// Update state displacement chart when hovering over a state
+function updateStateDisplacementChart(stateName) {
+  if (!stateName || !stateDisplacementChart) return;
+  
+  // Highlight the selected state in the chart
+  const stateIndex = Object.keys(stateDisplacementData).indexOf(stateName);
+  
+  // Update all background colors
+  const backgroundColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  if (stateIndex !== -1) {
+    backgroundColors[stateIndex] = '#FF671F'; // Highlight color
+  }
+  
+  stateDisplacementChart.data.datasets[0].backgroundColor = backgroundColors;
+  stateDisplacementChart.update();
+  
+  // Show x-axis label for the selected state
+  const labels = Object.keys(stateDisplacementData).map((state, i) => 
+    i === stateIndex ? state : ''
+  );
+  
+  stateDisplacementChart.options.scales.x.ticks.display = true;
+  stateDisplacementChart.data.labels = labels;
+  stateDisplacementChart.update();
+}
+
+// Reset state displacement chart
+function resetStateDisplacementChart() {
+  if (!stateDisplacementChart) return;
+  
+  // Reset all background colors
+  const backgroundColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  stateDisplacementChart.data.datasets[0].backgroundColor = backgroundColors;
+  
+  // Hide x-axis labels
+  stateDisplacementChart.options.scales.x.ticks.display = false;
+  stateDisplacementChart.data.labels = Object.keys(stateDisplacementData);
+  stateDisplacementChart.update();
 }
 
 // Initialize the flow map
