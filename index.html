@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -110,7 +110,7 @@
     
     /* Sidebar styles - Increased width */
     .sidebar {
-      width: 420px; /* Increased from 350px */
+      width: 420px;
       background-color: white;
       padding: 20px;
       border-right: 1px solid var(--medium-gray);
@@ -525,16 +525,16 @@
     /* Chart container - Made larger */
     .chart-container {
       margin-top: 15px;
-      height: 250px; /* Increased from 200px */
+      height: 250px;
       position: relative;
     }
     
     /* New state displacement chart container */
     .state-displacement-chart-container {
       margin-top: 20px;
-      height: 300px; /* Larger chart */
+      height: 300px;
       position: relative;
-      display: none; /* Initially hidden */
+      display: none;
     }
     
     /* Time period selector */
@@ -567,7 +567,7 @@
     /* Responsive adjustments */
     @media (max-width: 1200px) {
       .sidebar {
-        width: 380px; /* Adjusted from 320px */
+        width: 380px;
         padding: 15px;
       }
       
@@ -583,7 +583,7 @@
     @media (max-width: 992px) {
       .sidebar {
         position: absolute;
-        left: -420px; /* Adjusted from -350px */
+        left: -420px;
         top: var(--header-height);
         bottom: 0;
         z-index: 100;
@@ -828,10 +828,9 @@
         </div>
       </div>
       
-      <!-- New State Displacement Chart Section -->
       <div class="sidebar-section">
         <h2 class="sidebar-title">
-          <i class="fas fa-chart-bar"></i> State of Displacement
+          <i class="fas fa-chart-bar"></i> State of Displacement & Returns
         </h2>
         <div class="state-displacement-chart-container">
           <canvas id="stateDisplacementChart"></canvas>
@@ -927,26 +926,26 @@ let sudanStatesData;
 let trendChart;
 let stateDisplacementChart;
 
-// State displacement data
+// State displacement data - includes both IDPs and Returnees
 const stateDisplacementData = {
-  "Aj Jazirah": { code: "SD15", idps: 139842 },
-  "Blue Nile": { code: "SD08", idps: 405553 },
-  "Central Darfur": { code: "SD06", idps: 970797 },
-  "East Darfur": { code: "SD05", idps: 802944 },
-  "Gedaref": { code: "SD12", idps: 475315 },
-  "Kassala": { code: "SD11", idps: 118605 },
-  "Khartoum": { code: "SD01", idps: 230326 },
-  "North Darfur": { code: "SD02", idps: 1794860 },
-  "North Kordofan": { code: "SD13", idps: 218478 },
-  "Northern": { code: "SD17", idps: 530127 },
-  "Red Sea": { code: "SD10", idps: 178582 },
-  "River Nile": { code: "SD16", idps: 585975 },
-  "Sennar": { code: "SD14", idps: 92484 },
-  "South Darfur": { code: "SD03", idps: 1842960 },
-  "South Kordofan": { code: "SD07", idps: 392118 },
-  "West Darfur": { code: "SD04", idps: 347342 },
-  "West Kordofan": { code: "SD18", idps: 395260 },
-  "White Nile": { code: "SD09", idps: 543761 }
+  "Aj Jazirah": { code: "SD15", idps: 139842, returnees: 952275 },
+  "Blue Nile": { code: "SD08", idps: 405553, returnees: 0 },
+  "Central Darfur": { code: "SD06", idps: 970797, returnees: 0 },
+  "East Darfur": { code: "SD05", idps: 802944, returnees: 0 },
+  "Gedaref": { code: "SD12", idps: 475315, returnees: 0 },
+  "Kassala": { code: "SD11", idps: 118605, returnees: 0 },
+  "Khartoum": { code: "SD01", idps: 230326, returnees: 105723 },
+  "North Darfur": { code: "SD02", idps: 1794860, returnees: 0 },
+  "North Kordofan": { code: "SD13", idps: 218478, returnees: 0 },
+  "Northern": { code: "SD17", idps: 530127, returnees: 0 },
+  "Red Sea": { code: "SD10", idps: 178582, returnees: 0 },
+  "River Nile": { code: "SD16", idps: 585975, returnees: 28655 },
+  "Sennar": { code: "SD14", idps: 92484, returnees: 178107 },
+  "South Darfur": { code: "SD03", idps: 1842960, returnees: 0 },
+  "South Kordofan": { code: "SD07", idps: 392118, returnees: 0 },
+  "West Darfur": { code: "SD04", idps: 347342, returnees: 2005 },
+  "West Kordofan": { code: "SD18", idps: 395260, returnees: 0 },
+  "White Nile": { code: "SD09", idps: 543761, returnees: 70352 }
 };
 
 // Function to initialize the Population Distribution map
@@ -1568,7 +1567,7 @@ function initTrendChart() {
   });
 }
 
-// Initialize state displacement chart
+// Initialize state displacement chart with both IDPs and Returnees
 function initStateDisplacementChart() {
   const ctx = document.getElementById('stateDisplacementChart').getContext('2d');
   
@@ -1578,30 +1577,52 @@ function initStateDisplacementChart() {
   // Prepare data for the chart
   const states = Object.keys(stateDisplacementData);
   const idpsData = states.map(state => stateDisplacementData[state].idps);
+  const returneesData = states.map(state => stateDisplacementData[state].returnees);
   
   stateDisplacementChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: states,
-      datasets: [{
-        label: 'IDPs by State',
-        data: idpsData,
-        backgroundColor: '#2A6FBB',
-        borderColor: '#1a4d8c',
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          label: 'IDPs',
+          data: idpsData,
+          backgroundColor: '#2A6FBB',
+          borderColor: '#1a4d8c',
+          borderWidth: 1
+        },
+        {
+          label: 'Returnees',
+          data: returneesData,
+          backgroundColor: '#FF671F',
+          borderColor: '#d94a1a',
+          borderWidth: 1
+        }
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          display: true,
+          position: 'top',
+          labels: {
+            boxWidth: 12,
+            padding: 20,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
         },
         tooltip: {
           callbacks: {
             label: function(context) {
-              return context.raw.toLocaleString() + ' IDPs';
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+              }
+              label += context.raw.toLocaleString();
+              return label;
             }
           }
         }
@@ -1609,6 +1630,7 @@ function initStateDisplacementChart() {
       scales: {
         y: {
           beginAtZero: true,
+          stacked: false,
           ticks: {
             callback: function(value) {
               if (value >= 1000000) {
@@ -1624,6 +1646,7 @@ function initStateDisplacementChart() {
           }
         },
         x: {
+          stacked: false,
           grid: {
             display: false
           },
@@ -1664,13 +1687,17 @@ function updateStateDisplacementChart(stateName) {
   // Highlight the selected state in the chart
   const stateIndex = Object.keys(stateDisplacementData).indexOf(stateName);
   
-  // Update all background colors
-  const backgroundColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  // Update all background colors for both datasets
+  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  
   if (stateIndex !== -1) {
-    backgroundColors[stateIndex] = '#FF671F'; // Highlight color
+    idpsColors[stateIndex] = '#1a4d8c'; // Darker blue for highlight
+    returneesColors[stateIndex] = '#d94a1a'; // Darker orange for highlight
   }
   
-  stateDisplacementChart.data.datasets[0].backgroundColor = backgroundColors;
+  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
+  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
   stateDisplacementChart.update();
   
   // Show x-axis label for the selected state
@@ -1687,9 +1714,12 @@ function updateStateDisplacementChart(stateName) {
 function resetStateDisplacementChart() {
   if (!stateDisplacementChart) return;
   
-  // Reset all background colors
-  const backgroundColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
-  stateDisplacementChart.data.datasets[0].backgroundColor = backgroundColors;
+  // Reset all background colors for both datasets
+  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  
+  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
+  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
   
   // Hide x-axis labels
   stateDisplacementChart.options.scales.x.ticks.display = false;
