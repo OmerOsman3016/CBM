@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -108,6 +108,40 @@
       height: calc(100vh - var(--header-height));
     }
     
+    /* Sidebar styles - Increased width */
+    .sidebar {
+      width: 420px;
+      background-color: white;
+      padding: 20px;
+      border-right: 1px solid var(--medium-gray);
+      overflow-y: auto;
+      transition: var(--transition);
+      z-index: 10;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+    
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--medium-gray);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .sidebar-title i {
+      font-size: 1rem;
+    }
+    
     /* Map container styles */
     .map-container {
       flex-grow: 1;
@@ -115,7 +149,6 @@
       flex-direction: column;
       position: relative;
       background-color: var(--light-gray);
-      width: 100%;
     }
     
     #population-distribution-map {
@@ -190,6 +223,55 @@
     
     .toggle-btn i {
       font-size: 16px;
+    }
+    
+    /* Search container */
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    #state-search {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--medium-gray);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      transition: var(--transition);
+      background-color: var(--light-gray);
+    }
+    
+    #state-search:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(42, 111, 187, 0.15);
+    }
+    
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--medium-gray);
+      border-top: none;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .search-results div {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 14px;
+    }
+    
+    .search-results div:hover {
+      background-color: var(--light-gray);
     }
     
     /* Info and legend styles */
@@ -269,6 +351,75 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    
+    /* Data summary cards */
+    .data-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      box-shadow: var(--box-shadow);
+      border: 1px solid var(--medium-gray);
+      transition: var(--transition);
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    
+    .summary-card h3 {
+      font-size: 14px;
+      color: var(--dark-gray);
+      margin-bottom: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .summary-card .value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .summary-card .change {
+      font-size: 12px;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .summary-card .change.positive {
+      color: var(--tertiary-color);
+    }
+    
+    .summary-card .change.negative {
+      color: var(--secondary-color);
+    }
+    
+    .summary-card.idps {
+      border-top: 3px solid var(--primary-color);
+    }
+    
+    .summary-card.idps .value {
+      color: var(--primary-color);
+    }
+    
+    .summary-card.returnees {
+      border-top: 3px solid var(--secondary-color);
+    }
+    
+    .summary-card.returnees .value {
+      color: var(--secondary-color);
     }
     
     /* Flow map specific styles */
@@ -371,9 +522,186 @@
       background: #d1d9e6;
     }
     
+    /* Chart container - Made larger */
+    .chart-container {
+      margin-top: 15px;
+      height: 250px;
+      position: relative;
+    }
+    
+    /* New state displacement chart container */
+    .state-displacement-chart-container {
+      margin-top: 20px;
+      height: 300px;
+      position: relative;
+      display: none;
+    }
+    
+    /* Time period selector */
+    .time-period-selector {
+      display: flex;
+      background: var(--light-gray);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    
+    .time-period-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark-gray);
+      text-align: center;
+      transition: var(--transition);
+    }
+    
+    .time-period-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .sidebar {
+        width: 380px;
+        padding: 15px;
+      }
+      
+      .map-controls {
+        padding: 12px 15px;
+      }
+      
+      .map-title {
+        font-size: 1.2rem;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .sidebar {
+        position: absolute;
+        left: -420px;
+        top: var(--header-height);
+        bottom: 0;
+        z-index: 100;
+        background: white;
+      }
+      
+      .sidebar.active {
+        left: 0;
+      }
+      
+      .sidebar-toggle {
+        display: block !important;
+      }
+      
+      .flow-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      
+      .map-title {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 12px 15px;
+      }
+      
+      .app-title {
+        font-size: 1.2rem;
+      }
+      
+      .header-controls {
+        gap: 10px;
+      }
+      
+      .map-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .population-toggle {
+        width: 100%;
+      }
+      
+      .search-container {
+        max-width: 100%;
+      }
+      
+      .data-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .map-tabs {
+        width: 100%;
+      }
+      
+      .map-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      
+      .flow-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .flow-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .header-controls {
+        gap: 8px;
+      }
+      
+      .population-toggle .toggle-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      
+      .map-loading {
+        font-size: 14px;
+      }
+      
+      .map-loading:after {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .flow-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      
+      .summary-card .value {
+        font-size: 18px;
+      }
+    }
+    
     /* Utility classes */
     .hidden {
       display: none !important;
+    }
+    
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--primary-color);
+      cursor: pointer;
+      display: none;
     }
     
     .btn {
@@ -428,75 +756,18 @@
       background: var(--primary-dark);
     }
     
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .app-header {
-        padding: 12px 15px;
-      }
-      
-      .app-title {
-        font-size: 1.2rem;
-      }
-      
-      .header-controls {
-        gap: 10px;
-      }
-      
-      .map-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      .population-toggle {
-        width: 100%;
-      }
-      
-      .map-tabs {
-        width: 100%;
-      }
-      
-      .map-tab {
-        flex: 1;
-        justify-content: center;
-        padding: 8px 10px;
-        font-size: 13px;
-      }
-      
-      .flow-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-      
-      .flow-btn {
-        flex: 1;
-        justify-content: center;
-      }
+    /* Animation for cards */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
-    @media (max-width: 576px) {
-      .header-controls {
-        gap: 8px;
-      }
-      
-      .population-toggle .toggle-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-      }
-      
-      .map-loading {
-        font-size: 14px;
-      }
-      
-      .map-loading:after {
-        width: 35px;
-        height: 35px;
-      }
-      
-      .flow-btn {
-        padding: 6px 8px;
-        font-size: 11px;
-      }
+    .summary-card {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .summary-card.returnees {
+      animation-delay: 0.1s;
     }
   </style>
 </head>
@@ -504,6 +775,9 @@
 <body>
   <header class="app-header">
     <div class="logo-container">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
       <div>
         <h1 class="app-title">Sudan Displacement Tracking</h1>
         <p class="app-subtitle">Population Distribution & Flow Dashboard</p>
@@ -520,10 +794,52 @@
   </header>
   
   <div class="main-container">
-    <div class="map-container">
-      <div class="map-controls">
-        <h2 class="map-title" id="mapTitle">
-          <i class="fas fa-map-marked-alt"></i> Population Distribution Map
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-chart-bar"></i> Population Summary
+        </h2>
+        <div class="data-summary">
+          <div class="summary-card idps">
+            <h3><i class="fas fa-people-arrows"></i> Total IDPs</h3>
+            <div class="value">9,842,000</div>
+            <div class="change negative">
+              <i class="fas fa-arrow-up"></i> 12% increase from last month
+            </div>
+          </div>
+          <div class="summary-card returnees">
+            <h3><i class="fas fa-home"></i> Total Returnees</h3>
+            <div class="value">647,604</div>
+            <div class="change positive">
+              <i class="fas fa-arrow-down"></i> 5% decrease from last month
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+        
+        <div class="time-period-selector">
+          <button class="time-period-btn active">3M</button>
+          <button class="time-period-btn">6M</button>
+          <button class="time-period-btn">1Y</button>
+          <button class="time-period-btn">All</button>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-chart-bar"></i> State of Displacement & Returns
+        </h2>
+        <div class="state-displacement-chart-container">
+          <canvas id="stateDisplacementChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-map-marked-alt"></i> Map Controls
         </h2>
         <div class="map-tabs">
           <button class="map-tab active" data-tab="population">
@@ -533,6 +849,42 @@
             <i class="fas fa-project-diagram"></i> Flow
           </button>
         </div>
+        <div class="search-container">
+          <input type="text" id="state-search" placeholder="Search for a state..." />
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-info-circle"></i> Key Insights
+        </h2>
+        <div style="font-size: 13px; color: var(--dark-gray);">
+          <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
+          <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
+          <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <i class="fas fa-database"></i> Data Sources
+        </h2>
+        <p style="font-size: 13px; color: var(--dark-gray);">
+          Data provided by the International Organization for Migration (IOM) through the Displacement Tracking Matrix (DTM). 
+          <br><br>
+          <strong>Last updated:</strong> June 2024
+          <br>
+          <strong>Next update:</strong> July 2024
+        </p>
+      </div>
+    </aside>
+    
+    <div class="map-container">
+      <div class="map-controls">
+        <h2 class="map-title" id="mapTitle">
+          <i class="fas fa-map-marked-alt"></i> Population Distribution Map
+        </h2>
         <div class="population-toggle" id="populationToggle">
           <button class="toggle-btn active" data-type="idps">
             <i class="fas fa-people-arrows"></i> IDPs
@@ -571,6 +923,8 @@ let isAnimationPlaying = false;
 let showFlows = true;
 let showPoints = true;
 let sudanStatesData;
+let trendChart;
+let stateDisplacementChart;
 
 // State displacement data - includes both IDPs and Returnees
 const stateDisplacementData = {
@@ -602,6 +956,22 @@ async function initPopulationDistributionMap() {
     // Show loading state
     const loadingElement = document.getElementById('map-loading');
     if (loadingElement) loadingElement.style.display = 'flex';
+    
+    // Initialize trend chart
+    initTrendChart();
+    
+    // Initialize state displacement chart
+    initStateDisplacementChart();
+    
+    // Toggle sidebar on mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+      });
+    }
     
     // Tab switching functionality
     const tabButtons = document.querySelectorAll('.map-tab');
@@ -733,6 +1103,19 @@ async function initPopulationDistributionMap() {
       }
     };
     
+    // Calculate totals for the summary cards
+    let totalIDPs = 0;
+    let totalReturnees = 0;
+    
+    Object.values(populationData).forEach(state => {
+      totalIDPs += state.idps || 0;
+      totalReturnees += state.returnees || 0;
+    });
+    
+    // Update summary cards
+    document.querySelector('.summary-card.idps .value').textContent = totalIDPs.toLocaleString();
+    document.querySelector('.summary-card.returnees .value').textContent = totalReturnees.toLocaleString();
+    
     // Merge population data with GeoJSON features
     sudanStatesData.features.forEach(feature => {
       const stateName = feature.properties.admin1Name_en;
@@ -859,11 +1242,15 @@ async function initPopulationDistributionMap() {
       }
       
       info.update(layer.feature.properties);
+      updateTrendChart(layer.feature.properties);
+      updateStateDisplacementChart(layer.feature.properties.state);
     }
     
     function resetHighlight(e) {
       geojsonLayer.resetStyle(e.target);
       info.update();
+      resetTrendChart();
+      resetStateDisplacementChart();
     }
     
     function zoomToFeature(e) {
@@ -1022,6 +1409,64 @@ async function initPopulationDistributionMap() {
     
     legend.addTo(populationMap);
     
+    // Implement search functionality
+    const stateSearch = document.getElementById('state-search');
+    const searchResults = document.getElementById('searchResults');
+    
+    if (stateSearch && searchResults) {
+      stateSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        if (searchTerm.length < 2) {
+          searchResults.style.display = 'none';
+          return;
+        }
+        
+        const matchingFeatures = sudanStatesData.features.filter(feature => {
+          return feature.properties.state.toLowerCase().includes(searchTerm);
+        });
+        
+        if (matchingFeatures.length > 0) {
+          searchResults.innerHTML = matchingFeatures.map(feature => {
+            return `<div data-state="${feature.properties.state}">${feature.properties.state}</div>`;
+          }).join('');
+          searchResults.style.display = 'block';
+        } else {
+          searchResults.innerHTML = '<div>No matching states found</div>';
+          searchResults.style.display = 'block';
+        }
+      });
+      
+      // Handle click on search results
+      searchResults.addEventListener('click', function(e) {
+        if (e.target.tagName === 'DIV' && e.target.dataset.state) {
+          const stateName = e.target.dataset.state;
+          stateSearch.value = stateName;
+          searchResults.style.display = 'none';
+          
+          // Find and zoom to the feature
+          const feature = sudanStatesData.features.find(f => f.properties.state === stateName);
+          if (feature) {
+            const layer = geojsonLayer.getLayers().find(l => l.feature.properties.state === stateName);
+            if (layer) {
+              populationMap.fitBounds(layer.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 8
+              });
+              layer.fire('mouseover'); // Trigger hover effect
+            }
+          }
+        }
+      });
+      
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (e.target !== stateSearch) {
+          searchResults.style.display = 'none';
+        }
+      });
+    }
+    
     // Hide loading state
     if (loadingElement) loadingElement.style.display = 'none';
     
@@ -1037,6 +1482,249 @@ async function initPopulationDistributionMap() {
     const loadingElement = document.getElementById('map-loading');
     if (loadingElement) loadingElement.style.display = 'none';
   }
+}
+
+// Initialize trend chart
+function initTrendChart() {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
+          label: 'IDPs',
+          data: [8000000, 8500000, 9200000, 9842000],
+          borderColor: '#2A6FBB',
+          backgroundColor: 'rgba(42, 111, 187, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Returnees',
+          data: [550000, 600000, 620000, 647604],
+          borderColor: '#FF671F',
+          backgroundColor: 'rgba(255, 103, 31, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+              }
+              label += context.raw.toLocaleString();
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: function(value) {
+              if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+              } else if (value >= 1000) {
+                return (value / 1000).toFixed(0) + 'K';
+              }
+              return value;
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    }
+  });
+}
+
+// Initialize state displacement chart with both IDPs and Returnees
+function initStateDisplacementChart() {
+  const ctx = document.getElementById('stateDisplacementChart').getContext('2d');
+  
+  // Show the chart container
+  document.querySelector('.state-displacement-chart-container').style.display = 'block';
+  
+  // Prepare data for the chart
+  const states = Object.keys(stateDisplacementData);
+  const idpsData = states.map(state => stateDisplacementData[state].idps);
+  const returneesData = states.map(state => stateDisplacementData[state].returnees);
+  
+  stateDisplacementChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: states,
+      datasets: [
+        {
+          label: 'IDPs',
+          data: idpsData,
+          backgroundColor: '#2A6FBB',
+          borderColor: '#1a4d8c',
+          borderWidth: 1
+        },
+        {
+          label: 'Returnees',
+          data: returneesData,
+          backgroundColor: '#FF671F',
+          borderColor: '#d94a1a',
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            boxWidth: 12,
+            padding: 20,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+              }
+              label += context.raw.toLocaleString();
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          stacked: false,
+          ticks: {
+            callback: function(value) {
+              if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+              } else if (value >= 1000) {
+                return (value / 1000).toFixed(0) + 'K';
+              }
+              return value;
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          stacked: false,
+          grid: {
+            display: false
+          },
+          ticks: {
+            display: false // Hide x-axis labels initially
+          }
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    }
+  });
+}
+
+// Update trend chart when hovering over a state
+function updateTrendChart(props) {
+  if (!props || !props.trend || props.trend.length === 0) return;
+  
+  trendChart.data.datasets[0].data = props.trend;
+  trendChart.data.datasets[1].data = [];
+  trendChart.update();
+}
+
+// Reset trend chart to show national data
+function resetTrendChart() {
+  trendChart.data.datasets[0].data = [8000000, 8500000, 9200000, 9842000];
+  trendChart.data.datasets[1].data = [550000, 600000, 620000, 647604];
+  trendChart.update();
+}
+
+// Update state displacement chart when hovering over a state
+function updateStateDisplacementChart(stateName) {
+  if (!stateName || !stateDisplacementChart) return;
+  
+  // Highlight the selected state in the chart
+  const stateIndex = Object.keys(stateDisplacementData).indexOf(stateName);
+  
+  // Update all background colors for both datasets
+  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  
+  if (stateIndex !== -1) {
+    idpsColors[stateIndex] = '#1a4d8c'; // Darker blue for highlight
+    returneesColors[stateIndex] = '#d94a1a'; // Darker orange for highlight
+  }
+  
+  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
+  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
+  stateDisplacementChart.update();
+  
+  // Show x-axis label for the selected state
+  const labels = Object.keys(stateDisplacementData).map((state, i) => 
+    i === stateIndex ? state : ''
+  );
+  
+  stateDisplacementChart.options.scales.x.ticks.display = true;
+  stateDisplacementChart.data.labels = labels;
+  stateDisplacementChart.update();
+}
+
+// Reset state displacement chart
+function resetStateDisplacementChart() {
+  if (!stateDisplacementChart) return;
+  
+  // Reset all background colors for both datasets
+  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
+  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  
+  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
+  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
+  
+  // Hide x-axis labels
+  stateDisplacementChart.options.scales.x.ticks.display = false;
+  stateDisplacementChart.data.labels = Object.keys(stateDisplacementData);
+  stateDisplacementChart.update();
 }
 
 // Initialize the flow map
