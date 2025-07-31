@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -108,14 +108,13 @@
       height: calc(100vh - var(--header-height));
     }
     
-    /* Sidebar styles - Increased width */
-    .sidebar {
+    /* Sidebar content styles - now part of main container */
+    .sidebar-content {
       width: 420px;
       background-color: white;
       padding: 20px;
       border-right: 1px solid var(--medium-gray);
       overflow-y: auto;
-      transition: var(--transition);
       z-index: 10;
       box-shadow: 2px 0 10px rgba(0,0,0,0.05);
       display: flex;
@@ -566,7 +565,7 @@
     
     /* Responsive adjustments */
     @media (max-width: 1200px) {
-      .sidebar {
+      .sidebar-content {
         width: 380px;
         padding: 15px;
       }
@@ -581,21 +580,8 @@
     }
     
     @media (max-width: 992px) {
-      .sidebar {
-        position: absolute;
-        left: -420px;
-        top: var(--header-height);
-        bottom: 0;
-        z-index: 100;
-        background: white;
-      }
-      
-      .sidebar.active {
-        left: 0;
-      }
-      
-      .sidebar-toggle {
-        display: block !important;
+      .sidebar-content {
+        display: none;
       }
       
       .flow-controls {
@@ -775,9 +761,6 @@
 <body>
   <header class="app-header">
     <div class="logo-container">
-      <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
-      </button>
       <div>
         <h1 class="app-title">Sudan Displacement Tracking</h1>
         <p class="app-subtitle">Population Distribution & Flow Dashboard</p>
@@ -794,7 +777,7 @@
   </header>
   
   <div class="main-container">
-    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-content">
       <div class="sidebar-section">
         <h2 class="sidebar-title">
           <i class="fas fa-chart-bar"></i> Population Summary
@@ -878,7 +861,7 @@
           <strong>Next update:</strong> July 2024
         </p>
       </div>
-    </aside>
+    </div>
     
     <div class="map-container">
       <div class="map-controls">
@@ -962,16 +945,6 @@ async function initPopulationDistributionMap() {
     
     // Initialize state displacement chart
     initStateDisplacementChart();
-    
-    // Toggle sidebar on mobile
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    
-    if (sidebarToggle && sidebar) {
-      sidebarToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-      });
-    }
     
     // Tab switching functionality
     const tabButtons = document.querySelectorAll('.map-tab');
