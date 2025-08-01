@@ -163,8 +163,35 @@
     }
     
     .chart-container {
-      height: 350px; /* Increased from 250px to 350px */
+      height: 350px;
       margin-top: 10px;
+    }
+    
+    .chart-container-sm {
+      height: 300px;
+      margin-top: 10px;
+    }
+    
+    .state-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+    
+    .state-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--medium-gray);
+    }
+    
+    .state-name {
+      font-weight: 500;
+    }
+    
+    .state-value {
+      color: var(--primary-color);
+      font-weight: 600;
     }
     
     @media (max-width: 768px) {
@@ -176,8 +203,8 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-container {
-        height: 300px; /* Slightly smaller increase for mobile */
+      .chart-container, .chart-container-sm {
+        height: 300px;
       }
     }
   </style>
@@ -210,6 +237,9 @@
               <div class="sub-value">1.84M IDPs</div>
             </div>
           </div>
+          <div class="chart-container-sm">
+            <canvas id="idpsPieChart"></canvas>
+          </div>
         </div>
       </div>
       
@@ -231,6 +261,32 @@
               <div class="label">Top State</div>
               <div class="value">Aj Jazirah</div>
               <div class="sub-value">486K Returnees</div>
+            </div>
+          </div>
+          <div class="state-list">
+            <div class="state-item">
+              <span class="state-name">North Darfur</span>
+              <span class="state-value">1.79M</span>
+            </div>
+            <div class="state-item">
+              <span class="state-name">Central Darfur</span>
+              <span class="state-value">970K</span>
+            </div>
+            <div class="state-item">
+              <span class="state-name">East Darfur</span>
+              <span class="state-value">802K</span>
+            </div>
+            <div class="state-item">
+              <span class="state-name">Blue Nile</span>
+              <span class="state-value">405K</span>
+            </div>
+            <div class="state-item">
+              <span class="state-name">West Darfur</span>
+              <span class="state-value">347K</span>
+            </div>
+            <div class="state-item">
+              <span class="state-name">South Kordofan</span>
+              <span class="state-value">392K</span>
             </div>
           </div>
         </div>
@@ -282,9 +338,39 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   
   <script>
-    // Initialize Chart
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    const trendChart = new Chart(ctx, {
+    // State IDPs Data
+    const stateData = [
+      { state: 'South Darfur', idps: 1842960 },
+      { state: 'North Darfur', idps: 1794860 },
+      { state: 'Central Darfur', idps: 970797 },
+      { state: 'East Darfur', idps: 802944 },
+      { state: 'Blue Nile', idps: 405553 },
+      { state: 'West Darfur', idps: 347342 },
+      { state: 'South Kordofan', idps: 392118 },
+      { state: 'West Kordofan', idps: 395260 },
+      { state: 'Gedaref', idps: 475315 },
+      { state: 'River Nile', idps: 585975 },
+      { state: 'White Nile', idps: 543761 },
+      { state: 'Northern', idps: 530127 },
+      { state: 'Khartoum', idps: 230326 },
+      { state: 'North Kordofan', idps: 218478 },
+      { state: 'Aj Jazirah', idps: 139842 },
+      { state: 'Red Sea', idps: 178582 },
+      { state: 'Kassala', idps: 118605 },
+      { state: 'Sennar', idps: 92484 }
+    ];
+
+    // Sort by IDPs descending
+    stateData.sort((a, b) => b.idps - a.idps);
+
+    // Get top 5 states for pie chart
+    const topStates = stateData.slice(0, 5);
+    const otherStates = stateData.slice(5);
+    const otherTotal = otherStates.reduce((sum, state) => sum + state.idps, 0);
+
+    // Initialize Trend Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
       type: 'line',
       data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -351,6 +437,57 @@
         }
       }
     });
+
+    // Initialize IDPs Pie Chart
+    const idpsPieCtx = document.getElementById('idpsPieChart').getContext('2d');
+    const idpsPieChart = new Chart(idpsPieCtx, {
+      type: 'pie',
+      data: {
+        labels: [...topStates.map(state => state.state), 'Other States'],
+        datasets: [{
+          data: [...topStates.map(state => state.idps), otherTotal],
+          backgroundColor: [
+            '#4361ee', // South Darfur
+            '#3a0ca3', // North Darfur
+            '#4cc9f0', // Central Darfur
+            '#4895ef', // East Darfur
+            '#f72585', // Blue Nile
+            '#b5179e'  // Other States
+          ],
+          borderColor: '#fff',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 20
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.raw;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                if (value >= 1000000) {
+                  return `${label}: ${(value / 1000000).toFixed(1)}M (${percentage}%)`;
+                } else if (value >= 1000) {
+                  return `${label}: ${(value / 1000).toFixed(0)}K (${percentage}%)`;
+                }
+                return `${label}: ${value} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
   </script>
 </body>
-</html>
+</html> 
