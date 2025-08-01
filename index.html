@@ -421,6 +421,45 @@
       color: var(--secondary-color);
     }
     
+    /* New crossing card */
+    .summary-card.crossing {
+      border-top: 3px solid var(--tertiary-color);
+      grid-column: span 2;
+    }
+    
+    .summary-card.crossing .value {
+      color: var(--tertiary-color);
+    }
+    
+    .flow-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    
+    .flow-direction {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .flow-direction .arrow {
+      font-size: 18px;
+      color: var(--dark-gray);
+      margin: 5px 0;
+    }
+    
+    .flow-direction .label {
+      font-size: 12px;
+      color: var(--dark-gray);
+      font-weight: 500;
+    }
+    
+    .flow-direction .count {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+    
     /* Flow map specific styles */
     .flow-controls {
       display: flex;
@@ -755,6 +794,10 @@
     .summary-card.returnees {
       animation-delay: 0.1s;
     }
+    
+    .summary-card.crossing {
+      animation-delay: 0.2s;
+    }
   </style>
 </head>
 
@@ -795,6 +838,23 @@
             <div class="value">647,604</div>
             <div class="change positive">
               <i class="fas fa-arrow-down"></i> 5% decrease from last month
+            </div>
+          </div>
+          <!-- New Crossing Card -->
+          <div class="summary-card crossing">
+            <h3><i class="fas fa-exchange-alt"></i> Population Movement</h3>
+            <div class="value">1,245,320</div>
+            <div class="flow-details">
+              <div class="flow-direction">
+                <div class="label">Inflow</div>
+                <div class="arrow"><i class="fas fa-arrow-down"></i></div>
+                <div class="count">842,150</div>
+              </div>
+              <div class="flow-direction">
+                <div class="label">Outflow</div>
+                <div class="arrow"><i class="fas fa-arrow-up"></i></div>
+                <div class="count">403,170</div>
+              </div>
             </div>
           </div>
         </div>
@@ -846,6 +906,7 @@
           <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
           <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
           <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
+          <p><strong>Border Crossings:</strong> Over 1.2 million people have crossed borders, with Chad receiving the highest inflow.</p>
         </div>
       </div>
       
