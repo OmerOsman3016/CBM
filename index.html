@@ -6,7 +6,6 @@
   <title>Sudan Displacement Dashboard</title>
   
   <!-- External CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +39,7 @@
       font-family: 'Inter', sans-serif;
       background-color: #f1f5f9;
       height: 100vh;
-      overflow: hidden;
+      overflow: auto;
     }
 
     .app-header {
@@ -59,18 +58,15 @@
     }
     
     .main-container {
-      display: flex;
-      height: calc(100vh - var(--header-height));
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     
-    .sidebar-content {
-      width: 380px;
-      background-color: white;
-      padding: 15px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
     
     .dashboard-section {
@@ -111,12 +107,21 @@
       border-radius: var(--border-radius-sm);
       padding: 12px;
       text-align: center;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     
     .metric-card .value {
       font-size: 20px;
       font-weight: 700;
       margin: 5px 0;
+    }
+    
+    .metric-card .label {
+      font-size: 14px;
+      color: var(--dark-gray);
     }
     
     .idps-metric {
@@ -154,46 +159,20 @@
     
     .flow-item .value {
       font-size: 16px;
+      font-weight: 600;
     }
     
     .chart-container {
-      height: 200px;
+      height: 250px;
       margin-top: 10px;
     }
     
-    .map-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    #population-distribution-map,
-    #flow-map {
-      flex-grow: 1;
-      width: 100%;
-    }
-    
-    .map-controls {
-      padding: 10px 15px;
-      background-color: white;
-      border-bottom: 1px solid var(--medium-gray);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    /* Ensure data appears */
-    .metric-card, .chart-container {
-      min-height: 120px;
-    }
-    
     @media (max-width: 768px) {
-      .sidebar-content {
-        width: 320px;
-        padding: 10px;
+      .metrics-grid {
+        grid-template-columns: 1fr;
       }
       
-      .metrics-grid {
+      .dashboard-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -206,7 +185,7 @@
   </header>
   
   <div class="main-container">
-    <div class="sidebar-content">
+    <div class="dashboard-grid">
       <!-- IDPs Section -->
       <div class="dashboard-section">
         <div class="section-header">
@@ -219,10 +198,22 @@
             <div class="metric-card idps-metric">
               <div class="label">Total IDPs</div>
               <div class="value">9.84M</div>
+              <div class="change">12% increase</div>
             </div>
             <div class="metric-card">
               <div class="label">New This Month</div>
               <div class="value">1.05M</div>
+              <div class="sub-value">+82,000 from last week</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Top State</div>
+              <div class="value">South Darfur</div>
+              <div class="sub-value">1.84M IDPs</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Most Urgent Need</div>
+              <div class="value">Shelter</div>
+              <div class="sub-value">72% of IDPs</div>
             </div>
           </div>
         </div>
@@ -240,10 +231,22 @@
             <div class="metric-card returnees-metric">
               <div class="label">Total Returnees</div>
               <div class="value">647K</div>
+              <div class="change">5% decrease</div>
             </div>
             <div class="metric-card">
               <div class="label">New This Month</div>
               <div class="value">32K</div>
+              <div class="sub-value">+2,400 from last week</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Top State</div>
+              <div class="value">Aj Jazirah</div>
+              <div class="sub-value">486K Returnees</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Main Challenge</div>
+              <div class="value">Livelihoods</div>
+              <div class="sub-value">65% of returnees</div>
             </div>
           </div>
         </div>
@@ -260,6 +263,7 @@
           <div class="metric-card crossing-metric">
             <div class="label">Total Crossings</div>
             <div class="value">1.24M</div>
+            <div class="change">8% increase</div>
             <div class="flow-direction">
               <div class="flow-item">
                 <div class="label">Inflow</div>
@@ -269,6 +273,18 @@
                 <div class="label">Outflow</div>
                 <div class="value">403K</div>
               </div>
+            </div>
+          </div>
+          <div class="metrics-grid" style="margin-top: 15px;">
+            <div class="metric-card">
+              <div class="label">Main Destination</div>
+              <div class="value">Chad</div>
+              <div class="sub-value">412K people</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Main Origin</div>
+              <div class="value">West Darfur</div>
+              <div class="sub-value">387K people</div>
             </div>
           </div>
         </div>
@@ -288,21 +304,10 @@
         </div>
       </div>
     </div>
-    
-    <!-- Map container -->
-    <div class="map-container">
-      <div class="map-controls">
-        <h2 class="map-title">
-          <i class="fas fa-map-marked-alt"></i> Population Map
-        </h2>
-      </div>
-      <div id="population-distribution-map"></div>
-    </div>
   </div>
 
   <!-- JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   
   <script>
     // Initialize Chart
@@ -310,23 +315,25 @@
     const trendChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
         datasets: [
           {
             label: 'IDPs',
-            data: [7000000, 8000000, 8500000, 9200000],
+            data: [7000000, 8000000, 8500000, 9200000, 9500000, 9842000],
             borderColor: '#4361ee',
             backgroundColor: 'rgba(67, 97, 238, 0.1)',
             borderWidth: 2,
-            tension: 0.3
+            tension: 0.3,
+            fill: true
           },
           {
             label: 'Returnees',
-            data: [500000, 550000, 600000, 620000],
+            data: [500000, 550000, 600000, 620000, 635000, 647604],
             borderColor: '#f72585',
             backgroundColor: 'rgba(247, 37, 133, 0.1)',
             borderWidth: 2,
-            tension: 0.3
+            tension: 0.3,
+            fill: true
           }
         ]
       },
@@ -335,34 +342,42 @@
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 20
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) label += ': ';
+                if (context.raw >= 1000000) {
+                  label += (context.raw / 1000000).toFixed(1) + 'M';
+                } else if (context.raw >= 1000) {
+                  label += (context.raw / 1000).toFixed(0) + 'K';
+                } else {
+                  label += context.raw;
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            ticks: {
+              callback: function(value) {
+                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                return value;
+              }
+            }
           }
         }
       }
-    });
-
-    // Initialize Map
-    const map = L.map('population-distribution-map').setView([15, 30], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Sample data points
-    const locations = [
-      { lat: 15.5, lng: 32.5, name: "Khartoum", value: 1200000 },
-      { lat: 13.5, lng: 25.5, name: "Darfur", value: 1800000 },
-      { lat: 14.5, lng: 33.5, name: "Kassala", value: 500000 }
-    ];
-
-    locations.forEach(loc => {
-      L.circleMarker([loc.lat, loc.lng], {
-        radius: Math.sqrt(loc.value) / 300,
-        fillColor: "#4361ee",
-        color: "#fff",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.7
-      }).addTo(map).bindPopup(`${loc.name}<br>${loc.value.toLocaleString()} IDPs`);
     });
   </script>
 </body>
