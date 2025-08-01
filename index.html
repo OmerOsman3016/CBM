@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Sudan Displacement Dashboard</title>
+  <title>Sudan IDPs Dashboard</title>
   
   <!-- External CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.css" />
@@ -16,9 +16,6 @@
       --primary-light: #eef2ff;
       --secondary-color: #f72585;
       --secondary-light: #fff0f6;
-      --tertiary-color: #4cc9f0;
-      --success-color: #2ecc71;
-      --warning-color: #f39c12;
       --light-gray: #f8fafc;
       --medium-gray: #e2e8f0;
       --dark-gray: #64748b;
@@ -132,36 +129,6 @@
       color: var(--primary-color);
     }
     
-    .returnees-metric {
-      border-top: 3px solid var(--secondary-color);
-    }
-    
-    .returnees-metric .value {
-      color: var(--secondary-color);
-    }
-    
-    .crossing-metric {
-      border-top: 3px solid var(--tertiary-color);
-    }
-    
-    .crossing-metric .value {
-      color: var(--tertiary-color);
-    }
-    
-    .flow-direction {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-      padding: 10px;
-      background: var(--light-gray);
-      border-radius: var(--border-radius-sm);
-    }
-    
-    .flow-item .value {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    
     .chart-container {
       height: 350px;
       margin-top: 10px;
@@ -194,6 +161,28 @@
       font-weight: 600;
     }
     
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--medium-gray);
+    }
+    
+    .data-table th {
+      background-color: var(--light-gray);
+      font-weight: 600;
+    }
+    
+    .data-table tr:hover {
+      background-color: var(--primary-light);
+    }
+    
     @media (max-width: 768px) {
       .metrics-grid {
         grid-template-columns: 1fr;
@@ -206,22 +195,27 @@
       .chart-container, .chart-container-sm {
         height: 300px;
       }
+      
+      .data-table {
+        display: block;
+        overflow-x: auto;
+      }
     }
   </style>
 </head>
 
 <body>
   <header class="app-header">
-    <h1 class="app-title">Sudan Displacement Dashboard</h1>
+    <h1 class="app-title">Sudan IDPs Dashboard</h1>
   </header>
   
   <div class="main-container">
     <div class="dashboard-grid">
-      <!-- IDPs Section -->
+      <!-- Summary Section -->
       <div class="dashboard-section">
         <div class="section-header">
           <h2 class="section-title">
-            <i class="fas fa-people-arrows"></i> IDPs
+            <i class="fas fa-people-arrows"></i> IDPs Summary
           </h2>
         </div>
         <div class="section-content">
@@ -229,106 +223,77 @@
             <div class="metric-card idps-metric">
               <div class="label">Total IDPs</div>
               <div class="value">9.84M</div>
-              <div class="change">12% increase</div>
+              <div class="change">+12% since Jan</div>
             </div>
             <div class="metric-card">
-              <div class="label">Top State</div>
+              <div class="label">Most Affected State</div>
               <div class="value">South Darfur</div>
-              <div class="sub-value">1.84M IDPs</div>
+              <div class="sub-value">1.84M IDPs (18.7%)</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">States Affected</div>
+              <div class="value">18</div>
+              <div class="sub-value">100% of states</div>
+            </div>
+            <div class="metric-card">
+              <div class="label">Localities</div>
+              <div class="value">178</div>
+              <div class="sub-value">9,831 locations</div>
             </div>
           </div>
-          <div class="chart-container-sm">
+        </div>
+      </div>
+      
+      <!-- Distribution Pie Chart -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-chart-pie"></i> IDPs by State
+          </h2>
+        </div>
+        <div class="section-content">
+          <div class="chart-container">
             <canvas id="idpsPieChart"></canvas>
           </div>
         </div>
       </div>
       
-      <!-- Returnees Section -->
+      <!-- Top States Bar Chart -->
       <div class="dashboard-section">
         <div class="section-header">
           <h2 class="section-title">
-            <i class="fas fa-home"></i> Returnees
-          </h2>
-        </div>
-        <div class="section-content">
-          <div class="metrics-grid">
-            <div class="metric-card returnees-metric">
-              <div class="label">Total Returnees</div>
-              <div class="value">647K</div>
-              <div class="change">5% decrease</div>
-            </div>
-            <div class="metric-card">
-              <div class="label">Top State</div>
-              <div class="value">Aj Jazirah</div>
-              <div class="sub-value">486K Returnees</div>
-            </div>
-          </div>
-          <div class="state-list">
-            <div class="state-item">
-              <span class="state-name">North Darfur</span>
-              <span class="state-value">1.79M</span>
-            </div>
-            <div class="state-item">
-              <span class="state-name">Central Darfur</span>
-              <span class="state-value">970K</span>
-            </div>
-            <div class="state-item">
-              <span class="state-name">East Darfur</span>
-              <span class="state-value">802K</span>
-            </div>
-            <div class="state-item">
-              <span class="state-name">Blue Nile</span>
-              <span class="state-value">405K</span>
-            </div>
-            <div class="state-item">
-              <span class="state-name">West Darfur</span>
-              <span class="state-value">347K</span>
-            </div>
-            <div class="state-item">
-              <span class="state-name">South Kordofan</span>
-              <span class="state-value">392K</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Population Movement Section -->
-      <div class="dashboard-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-exchange-alt"></i> Population Movement
-          </h2>
-        </div>
-        <div class="section-content">
-          <div class="metric-card crossing-metric">
-            <div class="label">Total Crossings</div>
-            <div class="value">1.24M</div>
-            <div class="change">8% increase</div>
-            <div class="flow-direction">
-              <div class="flow-item">
-                <div class="label">Inflow</div>
-                <div class="value">842K</div>
-              </div>
-              <div class="flow-item">
-                <div class="label">Outflow</div>
-                <div class="value">403K</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Trends Section -->
-      <div class="dashboard-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-chart-line"></i> Trends
+            <i class="fas fa-chart-bar"></i> Top States
           </h2>
         </div>
         <div class="section-content">
           <div class="chart-container">
-            <canvas id="trendChart"></canvas>
+            <canvas id="idpsBarChart"></canvas>
           </div>
+        </div>
+      </div>
+      
+      <!-- Full Data Table -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-table"></i> State-Level Data
+          </h2>
+        </div>
+        <div class="section-content">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>IDPs</th>
+                <th>% of Total</th>
+                <th>Localities</th>
+                <th>Locations</th>
+              </tr>
+            </thead>
+            <tbody id="stateDataBody">
+              <!-- Filled by JavaScript -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -336,123 +301,78 @@
 
   <!-- JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-format/3.1.0/d3-format.min.js"></script>
   
   <script>
     // State IDPs Data
     const stateData = [
-      { state: 'South Darfur', idps: 1842960 },
-      { state: 'North Darfur', idps: 1794860 },
-      { state: 'Central Darfur', idps: 970797 },
-      { state: 'East Darfur', idps: 802944 },
-      { state: 'Blue Nile', idps: 405553 },
-      { state: 'West Darfur', idps: 347342 },
-      { state: 'South Kordofan', idps: 392118 },
-      { state: 'West Kordofan', idps: 395260 },
-      { state: 'Gedaref', idps: 475315 },
-      { state: 'River Nile', idps: 585975 },
-      { state: 'White Nile', idps: 543761 },
-      { state: 'Northern', idps: 530127 },
-      { state: 'Khartoum', idps: 230326 },
-      { state: 'North Kordofan', idps: 218478 },
-      { state: 'Aj Jazirah', idps: 139842 },
-      { state: 'Red Sea', idps: 178582 },
-      { state: 'Kassala', idps: 118605 },
-      { state: 'Sennar', idps: 92484 }
+      { state: 'South Darfur', code: 'SD03', localities: 21, locations: 158, idps: 1842960 },
+      { state: 'North Darfur', code: 'SD02', localities: 17, locations: 565, idps: 1794860 },
+      { state: 'Central Darfur', code: 'SD06', localities: 9, locations: 143, idps: 970797 },
+      { state: 'East Darfur', code: 'SD05', localities: 9, locations: 53, idps: 802944 },
+      { state: 'Blue Nile', code: 'SD08', localities: 7, locations: 242, idps: 405553 },
+      { state: 'West Darfur', code: 'SD04', localities: 8, locations: 160, idps: 347342 },
+      { state: 'South Kordofan', code: 'SD07', localities: 14, locations: 504, idps: 392118 },
+      { state: 'West Kordofan', code: 'SD18', localities: 14, locations: 719, idps: 395260 },
+      { state: 'Gedaref', code: 'SD12', localities: 12, locations: 656, idps: 475315 },
+      { state: 'River Nile', code: 'SD16', localities: 7, locations: 1283, idps: 585975 },
+      { state: 'White Nile', code: 'SD09', localities: 9, locations: 1319, idps: 543761 },
+      { state: 'Northern', code: 'SD17', localities: 7, locations: 646, idps: 530127 },
+      { state: 'Khartoum', code: 'SD01', localities: 7, locations: 547, idps: 230326 },
+      { state: 'North Kordofan', code: 'SD13', localities: 8, locations: 640, idps: 218478 },
+      { state: 'Aj Jazirah', code: 'SD15', localities: 8, locations: 1831, idps: 139842 },
+      { state: 'Red Sea', code: 'SD10', localities: 10, locations: 310, idps: 178582 },
+      { state: 'Kassala', code: 'SD11', localities: 11, locations: 325, idps: 118605 },
+      { state: 'Sennar', code: 'SD14', localities: 7, locations: 420, idps: 92484 }
     ];
 
+    // Calculate totals and percentages
+    const totalIDPs = stateData.reduce((sum, state) => sum + state.idps, 0);
+    const totalLocalities = stateData.reduce((sum, state) => sum + state.localities, 0);
+    const totalLocations = stateData.reduce((sum, state) => sum + state.locations, 0);
+    
     // Sort by IDPs descending
     stateData.sort((a, b) => b.idps - a.idps);
 
-    // Get top 5 states for pie chart
-    const topStates = stateData.slice(0, 5);
-    const otherStates = stateData.slice(5);
+    // Get top 6 states for pie chart (others grouped)
+    const topStates = stateData.slice(0, 6);
+    const otherStates = stateData.slice(6);
     const otherTotal = otherStates.reduce((sum, state) => sum + state.idps, 0);
 
-    // Initialize Trend Chart
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
-    const trendChart = new Chart(trendCtx, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [
-          {
-            label: 'IDPs',
-            data: [7000000, 8000000, 8500000, 9200000, 9500000, 9842000],
-            borderColor: '#4361ee',
-            backgroundColor: 'rgba(67, 97, 238, 0.1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          },
-          {
-            label: 'Returnees',
-            data: [500000, 550000, 600000, 620000, 635000, 647604],
-            borderColor: '#f72585',
-            backgroundColor: 'rgba(247, 37, 133, 0.1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 20
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) label += ': ';
-                if (context.raw >= 1000000) {
-                  label += (context.raw / 1000000).toFixed(1) + 'M';
-                } else if (context.raw >= 1000) {
-                  label += (context.raw / 1000).toFixed(0) + 'K';
-                } else {
-                  label += context.raw;
-                }
-                return label;
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: false,
-            ticks: {
-              callback: function(value) {
-                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
-                return value;
-              }
-            }
-          }
-        }
-      }
+    // Format numbers
+    const format = d3.format(",");
+    const formatShort = value => {
+      if (value >= 1000000) return (value / 1000000).toFixed(1) + "M";
+      if (value >= 1000) return (value / 1000).toFixed(0) + "K";
+      return format(value);
+    };
+
+    // Fill data table
+    const tableBody = document.getElementById('stateDataBody');
+    stateData.forEach(state => {
+      const row = document.createElement('tr');
+      const percentage = ((state.idps / totalIDPs) * 100).toFixed(1);
+      
+      row.innerHTML = `
+        <td>${state.state} (${state.code})</td>
+        <td>${format(state.idps)}</td>
+        <td>${percentage}%</td>
+        <td>${state.localities}</td>
+        <td>${format(state.locations)}</td>
+      `;
+      tableBody.appendChild(row);
     });
 
-    // Initialize IDPs Pie Chart
+    // Initialize Pie Chart
     const idpsPieCtx = document.getElementById('idpsPieChart').getContext('2d');
     const idpsPieChart = new Chart(idpsPieCtx, {
       type: 'pie',
       data: {
-        labels: [...topStates.map(state => state.state), 'Other States'],
+        labels: [...topStates.map(state => state.state), 'Other 12 States'],
         datasets: [{
           data: [...topStates.map(state => state.idps), otherTotal],
           backgroundColor: [
-            '#4361ee', // South Darfur
-            '#3a0ca3', // North Darfur
-            '#4cc9f0', // Central Darfur
-            '#4895ef', // East Darfur
-            '#f72585', // Blue Nile
-            '#b5179e'  // Other States
+            '#3a0ca3', '#4361ee', '#4895ef', '#4cc9f0', '#f72585', '#b5179e', '#7209b7'
           ],
           borderColor: '#fff',
           borderWidth: 1
@@ -463,10 +383,13 @@
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom',
+            position: 'right',
             labels: {
               boxWidth: 12,
-              padding: 20
+              padding: 20,
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
@@ -474,14 +397,52 @@
               label: function(context) {
                 const label = context.label || '';
                 const value = context.raw;
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = Math.round((value / total) * 100);
-                if (value >= 1000000) {
-                  return `${label}: ${(value / 1000000).toFixed(1)}M (${percentage}%)`;
-                } else if (value >= 1000) {
-                  return `${label}: ${(value / 1000).toFixed(0)}K (${percentage}%)`;
-                }
-                return `${label}: ${value} (${percentage}%)`;
+                const percentage = Math.round((value / totalIDPs) * 100);
+                return `${label}: ${formatShort(value)} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Initialize Bar Chart (Top 10 States)
+    const idpsBarCtx = document.getElementById('idpsBarChart').getContext('2d');
+    const top10States = stateData.slice(0, 10);
+    
+    const idpsBarChart = new Chart(idpsBarCtx, {
+      type: 'bar',
+      data: {
+        labels: top10States.map(state => state.state),
+        datasets: [{
+          label: 'IDPs',
+          data: top10States.map(state => state.idps),
+          backgroundColor: '#4361ee',
+          borderColor: '#3a0ca3',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `IDPs: ${format(context.raw)} (${((context.raw / totalIDPs) * 100).toFixed(1)}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return formatShort(value);
               }
             }
           }
@@ -490,4 +451,4 @@
     });
   </script>
 </body>
-</html> 
+</html>
