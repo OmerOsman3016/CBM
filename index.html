@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval'">
-  <meta name="description" content="Sudan | Displacement Tracking Matrix-Returnees Flow" />
-  <title>Sudan Displacement Tracking Matrix</title>
+  <meta name="description" content="Sudan Displacement Dashboard" />
+  <title>Sudan Displacement Dashboard</title>
   
   <!-- External CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- External JS -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -23,22 +23,26 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
  
   <style>
-    /* Base styles */
     :root {
-      --primary-color: #2A6FBB;
-      --primary-dark: #1a4d8c;
-      --primary-light: #E6F0FA;
-      --secondary-color: #FF671F;
-      --secondary-light: #FFE8DC;
-      --tertiary-color: #4CAF50;
-      --light-gray: #f8f9fa;
-      --medium-gray: #e9ecef;
-      --dark-gray: #495057;
-      --text-color: #212529;
-      --border-radius: 8px;
-      --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      --transition: all 0.3s ease;
-      --header-height: 70px;
+      --primary-color: #4361ee;
+      --primary-light: #eef2ff;
+      --secondary-color: #f72585;
+      --secondary-light: #fff0f6;
+      --tertiary-color: #4cc9f0;
+      --tertiary-light: #f0f9ff;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --light-gray: #f8fafc;
+      --medium-gray: #e2e8f0;
+      --dark-gray: #64748b;
+      --darker-gray: #334155;
+      --text-color: #1e293b;
+      --border-radius: 12px;
+      --border-radius-sm: 8px;
+      --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --header-height: 80px;
     }
     
     * {
@@ -50,20 +54,19 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Open Sans', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      background-color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
       color: var(--text-color);
       line-height: 1.6;
       height: 100vh;
       overflow: hidden;
-      position: relative;
     }
 
     /* Header styles */
     .app-header {
       background-color: white;
-      padding: 15px 25px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 0 30px;
+      box-shadow: var(--box-shadow);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -83,7 +86,7 @@
     }
     
     .app-title {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary-color);
       margin: 0;
@@ -93,7 +96,7 @@
       font-size: 0.9rem;
       color: var(--dark-gray);
       font-weight: 400;
-      margin-top: 3px;
+      margin-top: 4px;
     }
     
     .header-controls {
@@ -108,480 +111,180 @@
       height: calc(100vh - var(--header-height));
     }
     
-    /* Sidebar content styles - now part of main container */
+    /* Sidebar content */
     .sidebar-content {
       width: 420px;
       background-color: white;
-      padding: 20px;
+      padding: 25px;
       border-right: 1px solid var(--medium-gray);
       overflow-y: auto;
       z-index: 10;
       box-shadow: 2px 0 10px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
+      gap: 25px;
     }
     
-    .sidebar-section {
-      margin-bottom: 25px;
+    /* Dashboard Sections */
+    .dashboard-section {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      border: 1px solid var(--medium-gray);
+      overflow: hidden;
     }
     
-    .sidebar-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--primary-color);
-      margin-bottom: 15px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--medium-gray);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .sidebar-title i {
-      font-size: 1rem;
-    }
-    
-    /* Map container styles */
-    .map-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background-color: var(--light-gray);
-    }
-    
-    #population-distribution-map {
-      flex-grow: 1;
-      width: 100%;
-    }
-    
-    #flow-map {
-      flex-grow: 1;
-      width: 100%;
-      display: none;
-    }
-    
-    /* Map controls */
-    .map-controls {
-      padding: 15px 20px;
-      background-color: white;
+    .section-header {
+      padding: 18px 20px;
+      background: var(--light-gray);
       border-bottom: 1px solid var(--medium-gray);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 15px;
     }
     
-    .map-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--primary-color);
-      margin: 0;
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--darker-gray);
       display: flex;
       align-items: center;
       gap: 10px;
     }
     
-    .map-title i {
-      font-size: 1.2rem;
-    }
-    
-    /* Toggle buttons */
-    .population-toggle {
-      display: flex;
-      background: var(--medium-gray);
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: var(--box-shadow);
-    }
-    
-    .population-toggle .toggle-btn {
-      border: none;
-      padding: 10px 18px;
-      background: transparent;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--dark-gray);
-      transition: var(--transition);
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  
-    .population-toggle .toggle-btn.active {
-      background: var(--primary-color);
-      color: white;
-    }
-    
-    .population-toggle .toggle-btn:hover:not(.active) {
-      background: #d1d9e6;
-    }
-    
-    .toggle-btn i {
-      font-size: 16px;
-    }
-    
-    /* Search container */
-    .search-container {
-      position: relative;
-      width: 100%;
-    }
-    
-    #state-search {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid var(--medium-gray);
-      border-radius: var(--border-radius);
-      font-size: 14px;
-      transition: var(--transition);
-      background-color: var(--light-gray);
-    }
-    
-    #state-search:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(42, 111, 187, 0.15);
-    }
-    
-    .search-results {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid var(--medium-gray);
-      border-top: none;
-      border-radius: 0 0 var(--border-radius) var(--border-radius);
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 1000;
-      display: none;
-      box-shadow: var(--box-shadow);
-    }
-    
-    .search-results div {
-      padding: 10px 15px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      font-size: 14px;
-    }
-    
-    .search-results div:hover {
-      background-color: var(--light-gray);
-    }
-    
-    /* Info and legend styles */
-    .info {
-      padding: 15px;
-      background: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      font-size: 14px;
-      line-height: 1.5;
-      border: 1px solid var(--medium-gray);
-      max-width: 250px;
-    }
-    
-    .info h4 {
-      margin: 0 0 10px;
+    .section-title i {
+      font-size: 1rem;
       color: var(--primary-color);
-      font-size: 16px;
-      font-weight: 700;
     }
     
-    .population-legend {
-      background: white;
-      padding: 15px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      line-height: 1.5;
-      font-size: 14px;
-      border: 1px solid var(--medium-gray);
+    .section-content {
+      padding: 20px;
     }
     
-    .population-legend i {
-      width: 18px;
-      height: 18px;
-      float: left;
-      margin-right: 8px;
-      opacity: 0.9;
-      border-radius: 3px;
-    }
-    
-    .population-legend h4 {
-      margin: 0 0 12px;
-      color: var(--primary-color);
-      font-size: 16px;
-      font-weight: 700;
-      clear: both;
-    }
-    
-    /* Loading state */
-    .map-loading {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.95);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      font-size: 16px;
-      color: var(--text-color);
-      flex-direction: column;
-      gap: 15px;
-    }
-    
-    .map-loading:after {
-      content: "";
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--medium-gray);
-      border-top: 4px solid var(--primary-color);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Data summary cards */
-    .data-summary {
+    /* Metrics Grid */
+    .metrics-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 15px;
-      margin-bottom: 20px;
     }
     
-    .summary-card {
-      background: white;
-      border-radius: var(--border-radius);
-      padding: 15px;
-      box-shadow: var(--box-shadow);
-      border: 1px solid var(--medium-gray);
+    .metric-card {
+      background: var(--light-gray);
+      border-radius: var(--border-radius-sm);
+      padding: 18px 15px;
+      text-align: center;
       transition: var(--transition);
     }
     
-    .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     
-    .summary-card h3 {
+    .metric-card .label {
       font-size: 14px;
-      color: var(--dark-gray);
-      margin-bottom: 10px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .summary-card .value {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    
-    .summary-card .change {
-      font-size: 12px;
-      margin-top: 5px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
-    .summary-card .change.positive {
-      color: var(--tertiary-color);
-    }
-    
-    .summary-card .change.negative {
-      color: var(--secondary-color);
-    }
-    
-    .summary-card.idps {
-      border-top: 3px solid var(--primary-color);
-    }
-    
-    .summary-card.idps .value {
-      color: var(--primary-color);
-    }
-    
-    .summary-card.returnees {
-      border-top: 3px solid var(--secondary-color);
-    }
-    
-    .summary-card.returnees .value {
-      color: var(--secondary-color);
-    }
-    
-    /* New crossing card */
-    .summary-card.crossing {
-      border-top: 3px solid var(--tertiary-color);
-      grid-column: span 2;
-    }
-    
-    .summary-card.crossing .value {
-      color: var(--tertiary-color);
-    }
-    
-    .flow-details {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-    
-    .flow-direction {
-      text-align: center;
-      flex: 1;
-    }
-    
-    .flow-direction .arrow {
-      font-size: 18px;
-      color: var(--dark-gray);
-      margin: 5px 0;
-    }
-    
-    .flow-direction .label {
-      font-size: 12px;
       color: var(--dark-gray);
       font-weight: 500;
     }
     
-    .flow-direction .count {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-    
-    /* Flow map specific styles */
-    .flow-controls {
-      display: flex;
-      gap: 10px;
-      margin-left: auto;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    
-    .flow-btn {
-      padding: 8px 12px;
-      border-radius: var(--border-radius);
-      border: none;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background-color: var(--light-gray);
-      color: var(--dark-gray);
-      transition: var(--transition);
-    }
-    
-    .flow-btn:hover {
-      background-color: var(--medium-gray);
-    }
-    
-    .flow-btn.active {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .flow-legend {
-      background: white;
-      padding: 10px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      font-size: 12px;
-      line-height: 1.4;
-      border: 1px solid var(--medium-gray);
-      max-width: 200px;
-    }
-    
-    .flow-legend h4 {
-      margin: 0 0 8px;
-      color: var(--primary-color);
-      font-size: 14px;
+    .metric-card .value {
+      font-size: 24px;
       font-weight: 700;
+      margin: 8px 0;
     }
     
-    .flow-legend-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-    
-    .flow-legend-color {
-      width: 15px;
-      height: 15px;
-      margin-right: 8px;
-      border-radius: 2px;
-    }
-    
-    /* Tab controls */
-    .map-tabs {
-      display: flex;
-      background: var(--medium-gray);
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: var(--box-shadow);
-      margin-bottom: 15px;
-    }
-    
-    .map-tab {
-      padding: 10px 15px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-weight: 600;
+    .metric-card .sub-value {
+      font-size: 13px;
       color: var(--dark-gray);
-      transition: var(--transition);
-      white-space: nowrap;
+    }
+    
+    .metric-card .change {
+      font-size: 12px;
+      margin-top: 5px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      flex: 1;
       justify-content: center;
+      gap: 4px;
     }
     
-    .map-tab.active {
-      background: var(--primary-color);
-      color: white;
+    /* Specific metric colors */
+    .idps-metric {
+      border-top: 3px solid var(--primary-color);
     }
     
-    .map-tab:hover:not(.active) {
-      background: #d1d9e6;
+    .idps-metric .value {
+      color: var(--primary-color);
     }
     
-    /* Chart container - Made larger */
+    .returnees-metric {
+      border-top: 3px solid var(--secondary-color);
+    }
+    
+    .returnees-metric .value {
+      color: var(--secondary-color);
+    }
+    
+    .crossing-metric {
+      border-top: 3px solid var(--tertiary-color);
+    }
+    
+    .crossing-metric .value {
+      color: var(--tertiary-color);
+    }
+    
+    /* Flow direction indicators */
+    .flow-direction {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+      background: var(--light-gray);
+      border-radius: var(--border-radius-sm);
+      padding: 15px 10px;
+    }
+    
+    .flow-item {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .flow-item .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dark-gray);
+    }
+    
+    .flow-item .arrow {
+      font-size: 20px;
+      margin: 5px 0;
+    }
+    
+    .flow-item .value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .inflow .arrow {
+      color: var(--success-color);
+    }
+    
+    .outflow .arrow {
+      color: var(--warning-color);
+    }
+    
+    /* Chart container */
     .chart-container {
       margin-top: 15px;
-      height: 250px;
+      height: 220px;
       position: relative;
-    }
-    
-    /* New state displacement chart container */
-    .state-displacement-chart-container {
-      margin-top: 20px;
-      height: 300px;
-      position: relative;
-      display: none;
     }
     
     /* Time period selector */
     .time-period-selector {
       display: flex;
       background: var(--light-gray);
-      border-radius: var(--border-radius);
+      border-radius: var(--border-radius-sm);
       overflow: hidden;
-      margin-bottom: 15px;
+      margin-top: 15px;
     }
     
     .time-period-btn {
@@ -591,7 +294,7 @@
       background: transparent;
       cursor: pointer;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--dark-gray);
       text-align: center;
       transition: var(--transition);
@@ -602,143 +305,62 @@
       color: white;
     }
     
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
-      .sidebar-content {
-        width: 380px;
-        padding: 15px;
-      }
-      
-      .map-controls {
-        padding: 12px 15px;
-      }
-      
-      .map-title {
-        font-size: 1.2rem;
-      }
+    /* Map controls */
+    .map-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
     }
     
-    @media (max-width: 992px) {
-      .sidebar-content {
-        display: none;
-      }
-      
-      .flow-controls {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-      
-      .map-title {
-        font-size: 1.1rem;
-      }
+    #population-distribution-map,
+    #flow-map {
+      flex-grow: 1;
+      width: 100%;
     }
     
-    @media (max-width: 768px) {
-      .app-header {
-        padding: 12px 15px;
-      }
-      
-      .app-title {
-        font-size: 1.2rem;
-      }
-      
-      .header-controls {
-        gap: 10px;
-      }
-      
-      .map-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      .population-toggle {
-        width: 100%;
-      }
-      
-      .search-container {
-        max-width: 100%;
-      }
-      
-      .data-summary {
-        grid-template-columns: 1fr;
-      }
-      
-      .map-tabs {
-        width: 100%;
-      }
-      
-      .map-tab {
-        flex: 1;
-        justify-content: center;
-        padding: 8px 10px;
-        font-size: 13px;
-      }
-      
-      .flow-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-      
-      .flow-btn {
-        flex: 1;
-        justify-content: center;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .header-controls {
-        gap: 8px;
-      }
-      
-      .population-toggle .toggle-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-      }
-      
-      .map-loading {
-        font-size: 14px;
-      }
-      
-      .map-loading:after {
-        width: 35px;
-        height: 35px;
-      }
-      
-      .flow-btn {
-        padding: 6px 8px;
-        font-size: 11px;
-      }
-      
-      .summary-card .value {
-        font-size: 18px;
-      }
-    }
-    
-    /* Utility classes */
-    .hidden {
-      display: none !important;
-    }
-    
-    .sidebar-toggle {
-      background: none;
-      border: none;
-      font-size: 20px;
-      color: var(--primary-color);
-      cursor: pointer;
+    #flow-map {
       display: none;
     }
     
-    .btn {
-      padding: 10px 15px;
-      border-radius: var(--border-radius);
-      border: none;
+    .map-controls {
+      padding: 15px 25px;
+      background-color: white;
+      border-bottom: 1px solid var(--medium-gray);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .map-title {
+      font-size: 1.2rem;
       font-weight: 600;
+      color: var(--darker-gray);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 16px;
+      border-radius: var(--border-radius-sm);
+      border: none;
+      font-weight: 500;
       cursor: pointer;
       transition: var(--transition);
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      font-size: 14px;
+    }
+    
+    .btn-sm {
+      padding: 8px 12px;
+      font-size: 13px;
     }
     
     .btn-primary {
@@ -747,56 +369,54 @@
     }
     
     .btn-primary:hover {
-      background-color: var(--primary-dark);
-      transform: translateY(-1px);
+      background-color: #3a56d4;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(67, 97, 238, 0.3);
     }
     
     .btn-outline {
       background-color: transparent;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
+      border: 1px solid var(--medium-gray);
+      color: var(--darker-gray);
     }
     
     .btn-outline:hover {
-      background-color: rgba(42, 111, 187, 0.1);
-      transform: translateY(-1px);
+      background-color: var(--light-gray);
+      transform: translateY(-2px);
     }
     
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .sidebar-content {
+        width: 380px;
+        padding: 20px;
+      }
     }
     
-    ::-webkit-scrollbar-track {
-      background: var(--light-gray);
+    @media (max-width: 992px) {
+      .sidebar-content {
+        display: none;
+      }
     }
     
-    ::-webkit-scrollbar-thumb {
-      background: var(--primary-color);
-      border-radius: 4px;
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 0 20px;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
     
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-dark);
-    }
-    
-    /* Animation for cards */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .summary-card {
-      animation: fadeIn 0.5s ease-out forwards;
-    }
-    
-    .summary-card.returnees {
-      animation-delay: 0.1s;
-    }
-    
-    .summary-card.crossing {
-      animation-delay: 0.2s;
+    @media (max-width: 576px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header-controls {
+        gap: 10px;
+      }
     }
   </style>
 </head>
@@ -805,8 +425,8 @@
   <header class="app-header">
     <div class="logo-container">
       <div>
-        <h1 class="app-title">Sudan Displacement Tracking</h1>
-        <p class="app-subtitle">Population Distribution & Flow Dashboard</p>
+        <h1 class="app-title">Sudan Displacement Dashboard</h1>
+        <p class="app-subtitle">Tracking population movements and needs</p>
       </div>
     </div>
     <div class="header-controls">
@@ -821,113 +441,196 @@
   
   <div class="main-container">
     <div class="sidebar-content">
-      <div class="sidebar-section">
-        <h2 class="sidebar-title">
-          <i class="fas fa-chart-bar"></i> Population Summary
-        </h2>
-        <div class="data-summary">
-          <div class="summary-card idps">
-            <h3><i class="fas fa-people-arrows"></i> Total IDPs</h3>
-            <div class="value">9,842,000</div>
+      <!-- IDPs Section -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-people-arrows"></i> Internally Displaced Persons
+          </h2>
+          <button class="btn btn-outline btn-sm">
+            <i class="fas fa-info-circle"></i> Details
+          </button>
+        </div>
+        
+        <div class="section-content">
+          <div class="metrics-grid">
+            <div class="metric-card idps-metric">
+              <div class="label">Total IDPs</div>
+              <div class="value">9.84M</div>
+              <div class="change negative">
+                <i class="fas fa-arrow-up"></i> 12% increase
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">New This Month</div>
+              <div class="value">1.05M</div>
+              <div class="sub-value">+82,000 from last week</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Top State</div>
+              <div class="value">South Darfur</div>
+              <div class="sub-value">1.84M IDPs</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Most Urgent Need</div>
+              <div class="value">Shelter</div>
+              <div class="sub-value">72% of IDPs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Returnees Section -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-home"></i> Returnees
+          </h2>
+          <button class="btn btn-outline btn-sm">
+            <i class="fas fa-info-circle"></i> Details
+          </button>
+        </div>
+        
+        <div class="section-content">
+          <div class="metrics-grid">
+            <div class="metric-card returnees-metric">
+              <div class="label">Total Returnees</div>
+              <div class="value">647,604</div>
+              <div class="change positive">
+                <i class="fas fa-arrow-down"></i> 5% decrease
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">New This Month</div>
+              <div class="value">32,150</div>
+              <div class="sub-value">+2,400 from last week</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Top State</div>
+              <div class="value">Aj Jazirah</div>
+              <div class="sub-value">486,730 Returnees</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Main Challenge</div>
+              <div class="value">Livelihoods</div>
+              <div class="sub-value">65% of returnees</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Population Movement Section -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-exchange-alt"></i> Population Movement
+          </h2>
+          <button class="btn btn-outline btn-sm">
+            <i class="fas fa-info-circle"></i> Details
+          </button>
+        </div>
+        
+        <div class="section-content">
+          <div class="metric-card crossing-metric">
+            <div class="label">Total Crossings</div>
+            <div class="value">1.24M</div>
             <div class="change negative">
-              <i class="fas fa-arrow-up"></i> 12% increase from last month
+              <i class="fas fa-arrow-up"></i> 8% increase
             </div>
-          </div>
-          <div class="summary-card returnees">
-            <h3><i class="fas fa-home"></i> Total Returnees</h3>
-            <div class="value">647,604</div>
-            <div class="change positive">
-              <i class="fas fa-arrow-down"></i> 5% decrease from last month
-            </div>
-          </div>
-          <!-- New Crossing Card -->
-          <div class="summary-card crossing">
-            <h3><i class="fas fa-exchange-alt"></i> Population Movement</h3>
-            <div class="value">1,245,320</div>
-            <div class="flow-details">
-              <div class="flow-direction">
+            
+            <div class="flow-direction">
+              <div class="flow-item inflow">
                 <div class="label">Inflow</div>
                 <div class="arrow"><i class="fas fa-arrow-down"></i></div>
-                <div class="count">842,150</div>
+                <div class="value">842,150</div>
               </div>
-              <div class="flow-direction">
+              <div class="flow-item outflow">
                 <div class="label">Outflow</div>
                 <div class="arrow"><i class="fas fa-arrow-up"></i></div>
-                <div class="count">403,170</div>
+                <div class="value">403,170</div>
               </div>
             </div>
           </div>
+          
+          <div class="metrics-grid" style="margin-top: 15px;">
+            <div class="metric-card">
+              <div class="label">Main Destination</div>
+              <div class="value">Chad</div>
+              <div class="sub-value">412,500 people</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Main Origin</div>
+              <div class="value">West Darfur</div>
+              <div class="sub-value">387,200 people</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="label">Border Crossing</div>
+              <div class="value">Adré</div>
+              <div class="sub-value">Most active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Trends Section -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-chart-line"></i> Trends Over Time
+          </h2>
+          <div class="time-period-selector" style="width: auto;">
+            <button class="time-period-btn active">3M</button>
+            <button class="time-period-btn">6M</button>
+            <button class="time-period-btn">1Y</button>
+          </div>
         </div>
         
-        <div class="chart-container">
-          <canvas id="trendChart"></canvas>
+        <div class="section-content">
+          <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Map Controls Section -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-map-marked-alt"></i> Map Controls
+          </h2>
         </div>
         
-        <div class="time-period-selector">
-          <button class="time-period-btn active">3M</button>
-          <button class="time-period-btn">6M</button>
-          <button class="time-period-btn">1Y</button>
-          <button class="time-period-btn">All</button>
+        <div class="section-content">
+          <div class="map-tabs" style="margin-bottom: 15px;">
+            <button class="map-tab active" data-tab="population">
+              <i class="fas fa-map-marked-alt"></i> Population
+            </button>
+            <button class="map-tab" data-tab="flow">
+              <i class="fas fa-project-diagram"></i> Flow
+            </button>
+          </div>
+          
+          <div class="search-container">
+            <input type="text" id="state-search" placeholder="Search for a state..." />
+            <div class="search-results" id="searchResults"></div>
+          </div>
         </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h2 class="sidebar-title">
-          <i class="fas fa-chart-bar"></i> State of Displacement & Returns
-        </h2>
-        <div class="state-displacement-chart-container">
-          <canvas id="stateDisplacementChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h2 class="sidebar-title">
-          <i class="fas fa-map-marked-alt"></i> Map Controls
-        </h2>
-        <div class="map-tabs">
-          <button class="map-tab active" data-tab="population">
-            <i class="fas fa-map-marked-alt"></i> Population
-          </button>
-          <button class="map-tab" data-tab="flow">
-            <i class="fas fa-project-diagram"></i> Flow
-          </button>
-        </div>
-        <div class="search-container">
-          <input type="text" id="state-search" placeholder="Search for a state..." />
-          <div class="search-results" id="searchResults"></div>
-        </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h2 class="sidebar-title">
-          <i class="fas fa-info-circle"></i> Key Insights
-        </h2>
-        <div style="font-size: 13px; color: var(--dark-gray);">
-          <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
-          <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
-          <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
-          <p><strong>Border Crossings:</strong> Over 1.2 million people have crossed borders, with Chad receiving the highest inflow.</p>
-        </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h2 class="sidebar-title">
-          <i class="fas fa-database"></i> Data Sources
-        </h2>
-        <p style="font-size: 13px; color: var(--dark-gray);">
-          Data provided by the International Organization for Migration (IOM) through the Displacement Tracking Matrix (DTM). 
-          <br><br>
-          <strong>Last updated:</strong> June 2024
-          <br>
-          <strong>Next update:</strong> July 2024
-        </p>
       </div>
     </div>
     
+    <!-- Map container -->
     <div class="map-container">
       <div class="map-controls">
         <h2 class="map-title" id="mapTitle">
-          <i class="fas fa-map-marked-alt"></i> Population Distribution Map
+          <i class="fas fa-map-marked-alt"></i> Population Distribution
         </h2>
         <div class="population-toggle" id="populationToggle">
           <button class="toggle-btn active" data-type="idps">
