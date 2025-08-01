@@ -121,6 +121,16 @@
       color: var(--dark-gray);
     }
     
+    .metric-card .change {
+      font-size: 12px;
+      color: var(--dark-gray);
+    }
+    
+    .metric-card .sub-value {
+      font-size: 14px;
+      color: var(--dark-gray);
+    }
+    
     .idps-metric {
       border-top: 3px solid var(--primary-color);
     }
@@ -132,11 +142,13 @@
     .chart-container {
       height: 350px;
       margin-top: 10px;
+      position: relative;
     }
     
     .chart-container-sm {
       height: 300px;
       margin-top: 10px;
+      position: relative;
     }
     
     .state-list {
@@ -301,8 +313,6 @@
 
   <!-- JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-format/3.1.0/d3-format.min.js"></script>
-  
   <script>
     // State IDPs Data
     const stateData = [
@@ -340,11 +350,14 @@
     const otherTotal = otherStates.reduce((sum, state) => sum + state.idps, 0);
 
     // Format numbers
-    const format = d3.format(",");
-    const formatShort = value => {
+    const formatNumber = (num) => {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+
+    const formatShort = (value) => {
       if (value >= 1000000) return (value / 1000000).toFixed(1) + "M";
       if (value >= 1000) return (value / 1000).toFixed(0) + "K";
-      return format(value);
+      return formatNumber(value);
     };
 
     // Fill data table
@@ -355,100 +368,104 @@
       
       row.innerHTML = `
         <td>${state.state} (${state.code})</td>
-        <td>${format(state.idps)}</td>
+        <td>${formatNumber(state.idps)}</td>
         <td>${percentage}%</td>
         <td>${state.localities}</td>
-        <td>${format(state.locations)}</td>
+        <td>${formatNumber(state.locations)}</td>
       `;
       tableBody.appendChild(row);
     });
 
     // Initialize Pie Chart
-    const idpsPieCtx = document.getElementById('idpsPieChart').getContext('2d');
-    const idpsPieChart = new Chart(idpsPieCtx, {
-      type: 'pie',
-      data: {
-        labels: [...topStates.map(state => state.state), 'Other 12 States'],
-        datasets: [{
-          data: [...topStates.map(state => state.idps), otherTotal],
-          backgroundColor: [
-            '#3a0ca3', '#4361ee', '#4895ef', '#4cc9f0', '#f72585', '#b5179e', '#7209b7'
-          ],
-          borderColor: '#fff',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              boxWidth: 12,
-              padding: 20,
-              font: {
-                size: 12
+    const idpsPieCtx = document.getElementById('idpsPieChart');
+    if (idpsPieCtx) {
+      new Chart(idpsPieCtx, {
+        type: 'pie',
+        data: {
+          labels: [...topStates.map(state => state.state), 'Other 12 States'],
+          datasets: [{
+            data: [...topStates.map(state => state.idps), otherTotal],
+            backgroundColor: [
+              '#3a0ca3', '#4361ee', '#4895ef', '#4cc9f0', '#f72585', '#b5179e', '#7209b7'
+            ],
+            borderColor: '#fff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                padding: 20,
+                font: {
+                  size: 12
+                }
               }
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const label = context.label || '';
-                const value = context.raw;
-                const percentage = Math.round((value / totalIDPs) * 100);
-                return `${label}: ${formatShort(value)} (${percentage}%)`;
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw;
+                  const percentage = Math.round((value / totalIDPs) * 100);
+                  return `${label}: ${formatShort(value)} (${percentage}%)`;
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+    }
 
     // Initialize Bar Chart (Top 10 States)
-    const idpsBarCtx = document.getElementById('idpsBarChart').getContext('2d');
+    const idpsBarCtx = document.getElementById('idpsBarChart');
     const top10States = stateData.slice(0, 10);
     
-    const idpsBarChart = new Chart(idpsBarCtx, {
-      type: 'bar',
-      data: {
-        labels: top10States.map(state => state.state),
-        datasets: [{
-          label: 'IDPs',
-          data: top10States.map(state => state.idps),
-          backgroundColor: '#4361ee',
-          borderColor: '#3a0ca3',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `IDPs: ${format(context.raw)} (${((context.raw / totalIDPs) * 100).toFixed(1)}%)`;
+    if (idpsBarCtx) {
+      new Chart(idpsBarCtx, {
+        type: 'bar',
+        data: {
+          labels: top10States.map(state => state.state),
+          datasets: [{
+            label: 'IDPs',
+            data: top10States.map(state => state.idps),
+            backgroundColor: '#4361ee',
+            borderColor: '#3a0ca3',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `IDPs: ${formatNumber(context.raw)} (${((context.raw / totalIDPs) * 100).toFixed(1)}%)`;
+                }
               }
             }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return formatShort(value);
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatShort(value);
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+    }
   </script>
 </body>
 </html>
