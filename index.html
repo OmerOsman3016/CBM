@@ -140,59 +140,19 @@
     }
     
     .chart-container {
-      height: 350px;
+      height: 400px;  /* Increased height */
       margin-top: 10px;
       position: relative;
     }
     
     .chart-container-sm {
-      height: 300px;
+      height: 350px;  /* Increased height */
       margin-top: 10px;
       position: relative;
     }
     
-    .state-list {
-      max-height: 300px;
-      overflow-y: auto;
-      margin-top: 15px;
-    }
-    
-    .state-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--medium-gray);
-    }
-    
-    .state-name {
-      font-weight: 500;
-    }
-    
-    .state-value {
-      color: var(--primary-color);
-      font-weight: 600;
-    }
-    
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    
-    .data-table th, .data-table td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid var(--medium-gray);
-    }
-    
-    .data-table th {
-      background-color: var(--light-gray);
-      font-weight: 600;
-    }
-    
-    .data-table tr:hover {
-      background-color: var(--primary-light);
+    .full-width-section {
+      grid-column: 1 / -1;  /* Makes section span full width */
     }
     
     @media (max-width: 768px) {
@@ -204,13 +164,12 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-container, .chart-container-sm {
-        height: 300px;
+      .chart-container {
+        height: 350px;
       }
       
-      .data-table {
-        display: block;
-        overflow-x: auto;
+      .chart-container-sm {
+        height: 300px;
       }
     }
   </style>
@@ -256,11 +215,11 @@
         </div>
       </div>
       
-      <!-- Distribution Pie Chart -->
-      <div class="dashboard-section">
+      <!-- Distribution Pie Chart - Now full width -->
+      <div class="dashboard-section full-width-section">
         <div class="section-header">
           <h2 class="section-title">
-            <i class="fas fa-chart-pie"></i> IDPs by State
+            <i class="fas fa-chart-pie"></i> IDPs Distribution by State
           </h2>
         </div>
         <div class="section-content">
@@ -270,42 +229,17 @@
         </div>
       </div>
       
-      <!-- Top States Bar Chart -->
-      <div class="dashboard-section">
+      <!-- Top States Bar Chart - Now full width -->
+      <div class="dashboard-section full-width-section">
         <div class="section-header">
           <h2 class="section-title">
-            <i class="fas fa-chart-bar"></i> Top States
+            <i class="fas fa-chart-bar"></i> Top States by IDP Count
           </h2>
         </div>
         <div class="section-content">
           <div class="chart-container">
             <canvas id="idpsBarChart"></canvas>
           </div>
-        </div>
-      </div>
-      
-      <!-- Full Data Table -->
-      <div class="dashboard-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-table"></i> State-Level Data
-          </h2>
-        </div>
-        <div class="section-content">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>State</th>
-                <th>IDPs</th>
-                <th>% of Total</th>
-                <th>Localities</th>
-                <th>Locations</th>
-              </tr>
-            </thead>
-            <tbody id="stateDataBody">
-              <!-- Filled by JavaScript -->
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -338,8 +272,6 @@
 
     // Calculate totals and percentages
     const totalIDPs = stateData.reduce((sum, state) => sum + state.idps, 0);
-    const totalLocalities = stateData.reduce((sum, state) => sum + state.localities, 0);
-    const totalLocations = stateData.reduce((sum, state) => sum + state.locations, 0);
     
     // Sort by IDPs descending
     stateData.sort((a, b) => b.idps - a.idps);
@@ -359,22 +291,6 @@
       if (value >= 1000) return (value / 1000).toFixed(0) + "K";
       return formatNumber(value);
     };
-
-    // Fill data table
-    const tableBody = document.getElementById('stateDataBody');
-    stateData.forEach(state => {
-      const row = document.createElement('tr');
-      const percentage = ((state.idps / totalIDPs) * 100).toFixed(1);
-      
-      row.innerHTML = `
-        <td>${state.state} (${state.code})</td>
-        <td>${formatNumber(state.idps)}</td>
-        <td>${percentage}%</td>
-        <td>${state.localities}</td>
-        <td>${formatNumber(state.locations)}</td>
-      `;
-      tableBody.appendChild(row);
-    });
 
     // Initialize Pie Chart
     const idpsPieCtx = document.getElementById('idpsPieChart');
