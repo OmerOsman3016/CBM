@@ -1,216 +1,195 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Sudan | IDPs Pathways Across Sudan</title>
+  <title>Sudan | IDPs Pathways Across Borders</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   
-  <!-- Custom CSS -->
   <style>
-  body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  overflow: hidden; /* Prevent scroll */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f7fa;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-}
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+    }
 
-.container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  max-width: 100%;
-  padding: 0 20px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
 
-.header {
-  text-align: center;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  flex-shrink: 0;
-}
+    .header {
+      text-align: center;
+      padding: 15px;
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
 
-h1 {
-  color: #2a5885;
-  margin-bottom: 10px;
-}
+    h1 {
+      color: #2a5885;
+      margin: 0;
+      font-size: 1.5em;
+    }
 
-.subtitle {
-  color: #666;
-  font-size: 1.1em;
-}
+    .map-container {
+      flex: 1;
+      position: relative;
+      background-color: #fff;
+      overflow: hidden;
+    }
 
-.map-container {
-  flex: 1;
-  position: relative;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
+    #map {
+      height: 100%;
+      width: 100%;
+    }
 
-#map {
-  height: 100%;
-  width: 100%;
-}
+    .legend {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      line-height: 1.4;
+      font-size: 12px;
+    }
 
-.legend {
-  padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  line-height: 1.5;
-  font-size: 14px;
-}
+    .legend h4 {
+      margin: 0 0 8px;
+      color: #2a5885;
+      font-size: 13px;
+    }
 
-.legend h4 {
-  margin: 0 0 10px;
-  color: #2a5885;
-}
+    .legend i {
+      width: 15px;
+      height: 3px;
+      float: left;
+      margin-right: 6px;
+      opacity: 0.9;
+    }
 
-.legend i {
-  width: 18px;
-  height: 3px;
-  float: left;
-  margin-right: 8px;
-  opacity: 0.9;
-}
+    .map-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
 
-.map-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-}
+    .control-btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 5px;
+      padding: 5px 8px;
+      background: #2a5885;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
 
-.control-btn {
-  display: block;
-  width: 100%;
-  margin-bottom: 5px;
-  padding: 5px 10px;
-  background: #2a5885;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
-}
+    .control-btn:hover {
+      background: #3a6ea5;
+    }
 
-.control-btn:hover {
-  background: #3a6ea5;
-}
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
 
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #2a5885;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #2a5885;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+    .info-panel {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      max-width: 250px;
+      font-size: 12px;
+    }
 
-.info-panel {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  max-width: 300px;
-  font-size: 14px;
-}
+    .info-panel h3 {
+      margin: 0 0 8px;
+      color: #2a5885;
+      font-size: 14px;
+    }
 
-.info-panel h3 {
-  margin-top: 0;
-  color: #2a5885;
-}
+    .info-panel p {
+      margin: 0 0 8px;
+    }
 
-.info-panel p {
-  margin-bottom: 10px;
-}
-
-.info-panel .close-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #666;
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 0 10px;
-  }
-
-  .header {
-    padding: 15px;
-  }
-
-  .info-panel {
-    max-width: 200px;
-    font-size: 12px;
-    padding: 10px;
-  }
-}
-
+    .info-panel .close-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      color: #666;
+    }
   </style>
 </head>
 
 <body>
-
+  <div class="container">
+    <div class="header">
+      <h1>IDPs Pathways Across Borders</h1>
+    </div>
+    
     <div class="map-container">
       <div id="map"></div>
       
-      <!-- Loading overlay -->
       <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
         <div>Loading displacement data...</div>
       </div>
       
-      <!-- Map controls -->
       <div class="map-controls">
         <button class="control-btn" id="reset-view">
           <i class="fas fa-globe-africa"></i> Reset View
@@ -224,15 +203,17 @@ h1 {
         <button class="control-btn" id="toggle-points">
           <i class="fas fa-map-marker-alt"></i> <span id="points-text">Show Points</span>
         </button>
+        <button class="control-btn" id="toggle-borders">
+          <i class="fas fa-flag"></i> <span id="borders-text">Show Borders</span>
+        </button>
       </div>
       
-      <!-- Info panel -->
       <div class="info-panel" id="info-panel">
         <button class="close-btn" id="close-info">&times;</button>
         <h3>How to use this map</h3>
-        <p><strong>Click</strong> on any flow line or point to see detailed information about that displacement pathway.</p>
-        <p><strong>Hover</strong> over elements to see quick details.</p>
-        <p>Use the <strong>controls</strong> in the top right to adjust what's displayed.</p>
+        <p><strong>Click</strong> on flows or points for details</p>
+        <p><strong>Hover</strong> to see quick information</p>
+        <p>Use controls to adjust the view</p>
       </div>
     </div>
   </div>
@@ -240,199 +221,159 @@ h1 {
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   
-  <!-- Flowmap layer dependencies -->
+  <!-- Flowmap dependencies -->
   <script src="https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
-  <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
-  <script src="./src/CanvasFlowmapLayer.js"></script>
   
-  <!-- Main script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize the map
+      // Initialize map centered on Sudan
       const map = L.map('map').setView([16, 30], 5.5);
       
-   // Replace the existing base layer definitions with these:
-const cartoDBLight1 = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-});
-
-const openStreetMap1 = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-});
-
-const esriWorldImagery1 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
-});
-
-const stamenToner1 = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
-  attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>'
-});
-
-const mapboxLight = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    tileSize: 512,
-    zoomOffset: -1,
-    maxZoom: 18
-});
-
-const mapboxStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    tileSize: 512,
-    zoomOffset: -1,
-    maxZoom: 18
-});
-
-const mapboxSatellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    tileSize: 512,
-    zoomOffset: -1,
-    maxZoom: 18
-});
-
-const mapboxOutdoors = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    tileSize: 512,
-    zoomOffset: -1,
-    maxZoom: 18
-});
-    const mapboxCustom1 = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
-        attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        tileSize: 512,
-        zoomOffset: -1,
-        maxZoom: 18
-    });
-// Add default base layer to the map
-mapboxCustom1.addTo(map);
-
-// Add layer control to the map
-const baseLayers = {
-  "Mapbox Light": mapboxLight,
-  "Mapbox Streets": mapboxStreets,
-  "Mapbox Outdoors": mapboxOutdoors,
-  "Mapbox Satellite": mapboxSatellite,
-  "CartoDB Light": cartoDBLight1,
-  "OpenStreetMap": openStreetMap1,
-  "Esri World Imagery": esriWorldImagery1,
-  "Stamen Toner": stamenToner1,
-  "Mapbox Custom": mapboxCustom1
-};
-
-L.control.layers(baseLayers).addTo(map);
+      // Base layers
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
       
-      // State boundaries layer (for reference)
-      let stateBoundariesLayer;
-      
-      // Flowmap layer variables
-      let flowmapLayer;
-      let isAnimationPlaying = false;
-      let showFlows = true;
-      let showPoints = true;
-      
-      // Load data and initialize visualization
-      loadData();
-      
-      // UI event handlers
-      document.getElementById('reset-view').addEventListener('click', function() {
-        map.setView([16, 30], 5.5);
+      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
       });
       
-      document.getElementById('toggle-animation').addEventListener('click', function() {
-        isAnimationPlaying = !isAnimationPlaying;
-        
-        if (flowmapLayer) {
-          flowmapLayer.setAnimationStarted(isAnimationPlaying);
-          updateAnimationButton();
-        }
+      const lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       });
       
-      document.getElementById('toggle-flows').addEventListener('click', function() {
-        showFlows = !showFlows;
-        
-        if (flowmapLayer) {
-          flowmapLayer.setPathDisplayMode(showFlows ? 'all' : 'none');
-          updateFlowsButton();
-        }
-      });
+      // Layer control
+      L.control.layers({
+        "OpenStreetMap": osmLayer,
+        "Satellite": satelliteLayer,
+        "Light": lightLayer
+      }).addTo(map);
       
-      document.getElementById('toggle-points').addEventListener('click', function() {
-        showPoints = !showPoints;
-        
-        if (flowmapLayer) {
-          flowmapLayer.setPointVisibility(showPoints);
-          updatePointsButton();
-        }
-      });
-      
-      document.getElementById('close-info').addEventListener('click', function() {
-        document.getElementById('info-panel').style.display = 'none';
-      });
-      
-      // Update button states
-      function updateAnimationButton() {
-        const icon = document.getElementById('animation-icon');
-        const text = document.getElementById('animation-text');
-        
-        if (isAnimationPlaying) {
-          icon.className = 'fas fa-pause';
-          text.textContent = 'Pause';
-        } else {
-          icon.className = 'fas fa-play';
-          text.textContent = 'Play';
-        }
-      }
-      
-      function updateFlowsButton() {
-        const text = document.getElementById('flows-text');
-        text.textContent = showFlows ? 'Hide Flows' : 'Show Flows';
-      }
-      
-      function updatePointsButton() {
-        const text = document.getElementById('points-text');
-        text.textContent = showPoints ? 'Hide Points' : 'Show Points';
-      }
-      
-      // Load and process data
-      function loadData() {
-        // Load state boundaries (GeoJSON)
-        fetch('./data/sudan_states.geojson')
-          .then(response => response.json())
-          .then(data => {
-            stateBoundariesLayer = L.geoJSON(data, {
-              style: {
-                color: '#555',
-                weight: 1,
-                opacity: 0.7,
-                fillOpacity: 0.1
-              }
-            }).addTo(map);
-          })
-          .catch(error => {
-            console.error('Error loading state boundaries:', error);
-          });
-        
-        // Load displacement data (CSV)
-        Papa.parse('./data/IDPs_Pathway.csv', {
-          download: true,
-          header: true,
-          dynamicTyping: true,
-          skipEmptyLines: true,
-          complete: function(results) {
-            // Process the data to ensure displacement destination equals sum of e_Volume by e_locality_id
-            const processedData = processData(results.data);
-            initializeFlowmap(processedData);
-            document.getElementById('loading-overlay').style.display = 'none';
+      // Mock Sudan state boundaries (simplified)
+      const sudanStates = {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"name": "Khartoum"},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [32.3, 15.3], [32.8, 15.3], [32.8, 15.8], [32.3, 15.8], [32.3, 15.3]
+              ]]
+            }
           },
-          error: function(error) {
-            console.error('Error loading displacement data:', error);
-            document.getElementById('loading-overlay').innerHTML = 
-              '<div style="color: red; text-align: center;">Error loading data. Please try again later.</div>';
+          {
+            "type": "Feature",
+            "properties": {"name": "North Darfur"},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [24.0, 13.0], [26.0, 13.0], [26.0, 16.0], [24.0, 16.0], [24.0, 13.0]
+              ]]
+            }
           }
-        });
-      }
+        ]
+      };
       
-      // Process data to ensure displacement destination equals sum of e_Volume by e_locality_id
+      // Add state boundaries
+      L.geoJSON(sudanStates, {
+        style: {
+          color: '#555',
+          weight: 1,
+          opacity: 0.7,
+          fillOpacity: 0.1
+        }
+      }).addTo(map);
+      
+      // Cross-border locations data
+      const borderLocations = [
+        {name: "Um Dukhun", lat: 11.139, lon: 22.966},
+        {name: "Gallabat/Metema", lat: 12.95798, lon: 36.151888},
+        {name: "Al Laffa", lat: 15.15372, lon: 36.4355},
+        {name: "Argeen", lat: 21.988934, lon: 31.153322},
+        {name: "Ashkeet", lat: 22.000523, lon: 31.511477},
+        {name: "Adekonk", lat: 13.4623111, lon: 22.2296523}
+      ];
+      
+      // Create a layer group for border markers
+      const borderMarkers = L.layerGroup();
+      
+      // Add border markers with custom styling
+      borderLocations.forEach(location => {
+        const marker = L.circleMarker([location.lat, location.lon], {
+          radius: 8,
+          fillColor: "#4CAF50",
+          color: "#fff",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).bindPopup(`<b>${location.name}</b><br>Cross-border location`);
+        
+        borderMarkers.addLayer(marker);
+      });
+      
+      // Mock IDP pathway data (including cross-border flows)
+      const idpData = [
+        {
+          "s_State": "Egypt",
+          "s_Volume": 40610,
+          "s_state_id": "SD01",
+          "s_lat": 26.820553,
+          "s_lon": 30.802498,
+          "e_locality": "Al Ashkeet",
+          "e_locality_id": "SD15035",
+          "e_lat": 22.000523,
+          "e_lon": 31.511477,
+          "e_Volume": 4324,
+          "main_needs": "Food, Shelter",
+          "is_cross_border": true
+        },
+        {
+          "s_State": "Al Ashkeet",
+          "s_Volume": 4324,
+          "s_state_id": "SD15035",
+          "s_lat": 22.000523,
+          "s_lon": 31.511477,
+          "e_locality": "Khartoum",
+          "e_locality_id": "SD15031",
+          "e_lat": 15.851318,
+          "e_lon": 32.843002,
+          "e_Volume": 4324,
+          "main_needs": "Medical, Shelter"
+        },
+        {
+          "s_State": "Ethiopia",
+          "s_Volume": 18500,
+          "s_state_id": "ET01",
+          "s_lat": 12.95798,
+          "s_lon": 36.151888,
+          "e_locality": "Gallabat/Metema",
+          "e_locality_id": "SD15036",
+          "e_lat": 12.95798,
+          "e_lon": 36.151888,
+          "e_Volume": 18500,
+          "main_needs": "Food, Water",
+          "is_cross_border": true
+        },
+        {
+          "s_State": "Chad",
+          "s_Volume": 12700,
+          "s_state_id": "TD01",
+          "s_lat": 13.4623111,
+          "s_lon": 22.2296523,
+          "e_locality": "Adekonk",
+          "e_locality_id": "SD15037",
+          "e_lat": 13.4623111,
+          "e_lon": 22.2296523,
+          "e_Volume": 12700,
+          "main_needs": "Shelter, Medical",
+          "is_cross_border": true
+        }
+      ];
+      
+      // Process data for visualization
       function processData(data) {
-        // Group data by e_locality_id and calculate total volume for each destination
         const destinationVolumes = {};
         
         data.forEach(item => {
@@ -450,16 +391,11 @@ L.control.layers(baseLayers).addTo(map);
           destinationVolumes[localityId].items.push(item);
         });
         
-        // Update each item's e_Volume to be the total volume for its destination
         const processedData = [];
-        
         Object.keys(destinationVolumes).forEach(localityId => {
           const destination = destinationVolumes[localityId];
-          const totalVolume = destination.totalVolume;
-          
           destination.items.forEach(item => {
-            // Update the e_Volume to be the total for this destination
-            item.e_Volume = totalVolume;
+            item.e_Volume = destination.totalVolume;
             processedData.push(item);
           });
         });
@@ -467,175 +403,278 @@ L.control.layers(baseLayers).addTo(map);
         return processedData;
       }
       
-      // Initialize flowmap visualization
-      function initializeFlowmap(data) {
-        // Convert CSV data to GeoJSON format
-        const geoJsonFeatureCollection = {
-          type: 'FeatureCollection',
-          features: data.map(datum => ({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [datum.s_lon, datum.s_lat] },
-            properties: datum
-          }))
-        };
+      // Custom flowmap layer
+      class CanvasFlowmapLayer extends L.Layer {
+        constructor(data, options) {
+          super();
+          this._data = data;
+          this._options = options || {};
+          this._paths = [];
+          this._points = [];
+          this._animationPlaying = true;
+          this._showFlows = true;
+          this._showPoints = true;
+          
+          this._processData();
+        }
         
-        // Create flowmap layer
-        flowmapLayer = L.canvasFlowmapLayer(geoJsonFeatureCollection, {
-          originAndDestinationFieldIds: {
-            originUniqueIdField: 's_state_id',
-            originGeometry: { x: 's_lon', y: 's_lat' },
-            destinationUniqueIdField: 'e_locality_id',
-            destinationGeometry: { x: 'e_lon', y: 'e_lat' }
-          },
-          style: (feature) => {
-            const baseRadius = 10;
-            const maxRadius = 6;
-            const volume = feature.properties.e_Volume || 0;
+        _processData() {
+          this._data.forEach(item => {
+            const origin = [item.s_lat, item.s_lon];
+            const dest = [item.e_lat, item.e_lon];
+            const volume = item.e_Volume;
             
-            // Different styles for origin and destination points
-            const radius = feature.properties.isOrigin
-              ? baseRadius
-              : Math.min(baseRadius + (volume / 5000), maxRadius);
+            this._paths.push({
+              origin: origin,
+              destination: dest,
+              volume: volume,
+              properties: item
+            });
             
-            return {
-              radius: radius,
-              weight: 1,
-              color: '#fff',
-              fillColor: feature.properties.isOrigin ? '#ff671f' : '#418FDE',
-              fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
-            };
-          },
-          canvasBezierStyle: {
-            type: 'classBreaks',
-            field: 'e_Volume',
-            classBreakInfos: [
-              { 
-                classMinValue: 1, 
-                classMaxValue: 80000, 
-                symbol: { 
-                  strokeStyle: '#ffb81c', 
-                  lineWidth: 0.5, 
-                  lineCap: 'round', 
-                  shadowColor: '#fee8c8', 
-                  shadowBlur: 2.0 
-                } 
-              },
-              { 
-                classMinValue: 80001, 
-                classMaxValue: 1000000, 
-                symbol: { 
-                  strokeStyle: '#ff671f', 
-                  lineWidth: 1.5, 
-                  lineCap: 'round', 
-                  shadowColor: '#fdbb84', 
-                  shadowBlur: 2.0 
-                } 
-              },
-              { 
-                classMinValue: 1000001, 
-                classMaxValue: 160000, 
-                symbol: { 
-                  strokeStyle: '#d22630', 
-                  lineWidth: 3, 
-                  lineCap: 'round', 
-                  shadowColor: '#e34a33', 
-                  shadowBlur: 2.0 
-                } 
-              }
-            ],
-            defaultSymbol: { 
-              strokeStyle: '#e7e1ef', 
-              lineWidth: 0.5, 
-              lineCap: 'round', 
-              shadowColor: '#e7e1ef', 
-              shadowBlur: 1.5 
+            this._points.push({
+              location: origin,
+              isOrigin: true,
+              properties: item
+            });
+            
+            this._points.push({
+              location: dest,
+              isOrigin: false,
+              properties: item,
+              isCrossBorder: item.is_cross_border
+            });
+          });
+        }
+        
+        onAdd(map) {
+          this._map = map;
+          this._canvas = L.DomUtil.create('canvas', 'leaflet-layer');
+          this._ctx = this._canvas.getContext('2d');
+          
+          const size = this._map.getSize();
+          this._canvas.width = size.x;
+          this._canvas.height = size.y;
+          
+          this._map.getPanes().overlayPane.appendChild(this._canvas);
+          
+          this._map.on('moveend', this._reset);
+          this._map.on('resize', this._resize);
+          
+          this._reset();
+          this._animate();
+        }
+        
+        onRemove(map) {
+          this._map.getPanes().overlayPane.removeChild(this._canvas);
+          this._map.off('moveend', this._reset);
+          this._map.off('resize', this._resize);
+        }
+        
+        _resize() {
+          const size = this._map.getSize();
+          this._canvas.width = size.x;
+          this._canvas.height = size.y;
+          this._reset();
+        }
+        
+        _reset = () => {
+          const topLeft = this._map.containerPointToLayerPoint([0, 0]);
+          L.DomUtil.setPosition(this._canvas, topLeft);
+          this._draw();
+        }
+        
+        _animate() {
+          if (!this._animationPlaying) {
+            this._draw();
+            requestAnimationFrame(this._animate.bind(this));
+            return;
+          }
+          
+          this._draw();
+          requestAnimationFrame(this._animate.bind(this));
+        }
+        
+        _draw() {
+          this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+          
+          if (this._showFlows) {
+            this._drawPaths();
+          }
+          
+          if (this._showPoints) {
+            this._drawPoints();
+          }
+        }
+        
+        _drawPaths() {
+          this._paths.forEach(path => {
+            const start = this._map.latLngToContainerPoint(path.origin);
+            const end = this._map.latLngToContainerPoint(path.destination);
+            
+            // Style cross-border flows differently
+            let color = '#ffb81c'; // yellow
+            let width = Math.min(3, Math.max(0.5, path.volume / 20000));
+            
+            if (path.volume > 50000) color = '#ff671f'; // orange
+            if (path.volume > 100000) color = '#d22630'; // red
+            if (path.properties.is_cross_border) {
+              color = '#9c27b0'; // purple for cross-border
+              width = width * 1.5; // thicker line
             }
-          },
-          pathDisplayMode: 'all',
-          animationStarted: true,
-          animationEasingFamily: 'Linear',
-          animationEasingType: 'None',
-          animationDuration: 3000,
-          onEachFeature: addTooltip
-        }).addTo(map);
+            
+            this._ctx.beginPath();
+            this._ctx.moveTo(start.x, start.y);
+            this._ctx.lineTo(end.x, end.y);
+            this._ctx.strokeStyle = color;
+            this._ctx.lineWidth = width;
+            this._ctx.stroke();
+          });
+        }
         
-        // Set initial UI states
-        isAnimationPlaying = true;
-        showFlows = true;
-        showPoints = true;
-        updateAnimationButton();
-        updateFlowsButton();
-        updatePointsButton();
+        _drawPoints() {
+          this._points.forEach(point => {
+            const pixel = this._map.latLngToContainerPoint(point.location);
+            
+            this._ctx.beginPath();
+            this._ctx.arc(pixel.x, pixel.y, point.isOrigin ? 8 : 6, 0, Math.PI * 2);
+            
+            // Color points differently for cross-border locations
+            if (point.isCrossBorder) {
+              this._ctx.fillStyle = '#4CAF50'; // green for border points
+            } else {
+              this._ctx.fillStyle = point.isOrigin ? '#ff671f' : '#418FDE';
+            }
+            
+            this._ctx.fill();
+            this._ctx.strokeStyle = '#fff';
+            this._ctx.lineWidth = 1;
+            this._ctx.stroke();
+          });
+        }
         
-        // Highlight paths on mouseover
-        flowmapLayer.on('mouseover', (e) => {
-          if (e.sharedOriginFeatures.length) {
-            flowmapLayer.selectFeaturesForPathDisplay(e.sharedOriginFeatures, 'SELECTION_NEW');
-          }
-          if (e.sharedDestinationFeatures.length) {
-            flowmapLayer.selectFeaturesForPathDisplay(e.sharedDestinationFeatures, 'SELECTION_NEW');
-          }
-        });
+        setAnimationStarted(playing) {
+          this._animationPlaying = playing;
+        }
         
-        // Select initial feature for path display (Khartoum)
-        flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
+        setPathDisplayMode(mode) {
+          this._showFlows = mode !== 'none';
+        }
+        
+        setPointVisibility(visible) {
+          this._showPoints = visible;
+        }
       }
       
-      // Add tooltip and popup to features
-      function addTooltip(feature, layer) {
-        const tooltipContent = feature.properties.isOrigin
-          ? `Displacement From: ${feature.properties.s_State}`
-          : `Displacement To: ${feature.properties.e_locality}`;
-        
-        layer.bindTooltip(tooltipContent);
-        layer.on('mouseover', () => layer.openTooltip());
-        layer.on('mouseout', () => layer.closeTooltip());
-        
-        // Add popup with more detailed information
-        const popupContent = feature.properties.isOrigin
-          ? `<div style="min-width: 200px;">
-               <h4 style="margin: 0 0 10px; color: #2a5885;">Displacement Origin</h4>
-               <p><strong>State:</strong> ${feature.properties.s_State}</p>
-               <p><strong>Total Displaced:</strong> ${feature.properties.s_total_displaced ? feature.properties.s_total_displaced.toLocaleString() : 'N/A'}</p>
-               <p><small>Click to view destination flows</small></p>
-             </div>`
-          : `<div style="min-width: 200px;">
-               <h4 style="margin: 0 0 10px; color: #2a5885;">Displacement Destination</h4>
-               <p><strong>Location:</strong> ${feature.properties.e_locality}</p>
-               <p><strong>Total Displaced Population:</strong> ${feature.properties.e_Volume ? feature.properties.e_Volume.toLocaleString() : 'N/A'}</p>
-               <p><strong>Main Needs:</strong> ${feature.properties.main_needs || 'Not specified'}</p>
-             </div>`;
-        
-        layer.bindPopup(popupContent);
+      // Initialize flowmap with processed data
+      const processedData = processData(idpData);
+      const flowmapLayer = new CanvasFlowmapLayer(processedData);
+      flowmapLayer.addTo(map);
+      
+      // Add border markers to map
+      borderMarkers.addTo(map);
+      
+      // Hide loading overlay
+      document.getElementById('loading-overlay').style.display = 'none';
+      
+      // UI Controls
+      document.getElementById('reset-view').addEventListener('click', function() {
+        map.setView([16, 30], 5.5);
+      });
+      
+      let isAnimationPlaying = true;
+      document.getElementById('toggle-animation').addEventListener('click', function() {
+        isAnimationPlaying = !isAnimationPlaying;
+        flowmapLayer.setAnimationStarted(isAnimationPlaying);
+        updateAnimationButton();
+      });
+      
+      let showFlows = true;
+      document.getElementById('toggle-flows').addEventListener('click', function() {
+        showFlows = !showFlows;
+        flowmapLayer.setPathDisplayMode(showFlows ? 'all' : 'none');
+        updateFlowsButton();
+      });
+      
+      let showPoints = true;
+      document.getElementById('toggle-points').addEventListener('click', function() {
+        showPoints = !showPoints;
+        flowmapLayer.setPointVisibility(showPoints);
+        updatePointsButton();
+      });
+      
+      let showBorders = true;
+      document.getElementById('toggle-borders').addEventListener('click', function() {
+        showBorders = !showBorders;
+        if (showBorders) {
+          borderMarkers.addTo(map);
+        } else {
+          borderMarkers.remove();
+        }
+        updateBordersButton();
+      });
+      
+      document.getElementById('close-info').addEventListener('click', function() {
+        document.getElementById('info-panel').style.display = 'none';
+      });
+      
+      function updateAnimationButton() {
+        const icon = document.getElementById('animation-icon');
+        const text = document.getElementById('animation-text');
+        icon.className = isAnimationPlaying ? 'fas fa-pause' : 'fas fa-play';
+        text.textContent = isAnimationPlaying ? 'Pause' : 'Play';
+      }
+      
+      function updateFlowsButton() {
+        document.getElementById('flows-text').textContent = 
+          showFlows ? 'Hide Flows' : 'Show Flows';
+      }
+      
+      function updatePointsButton() {
+        document.getElementById('points-text').textContent = 
+          showPoints ? 'Hide Points' : 'Show Points';
+      }
+      
+      function updateBordersButton() {
+        document.getElementById('borders-text').textContent = 
+          showBorders ? 'Hide Borders' : 'Show Borders';
       }
       
       // Add legend
-      const legend = L.control({ position: 'bottomright' });
+      const legend = L.control({position: 'bottomright'});
       legend.onAdd = function() {
         const div = L.DomUtil.create('div', 'legend');
         div.innerHTML = `
           <h4>IDP Flow Volume</h4>
-          <div style="display: flex; align-items: center; margin: 5px 0;">
-            <i style="background:#ffb81c"></i> <span>&lt; 50,000 IDPs</span>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <i style="background:#ffb81c"></i> <span>&lt; 50K</span>
           </div>
-          <div style="display: flex; align-items: center; margin: 5px 0;">
-            <i style="background:#ff671f"></i> <span>50,000 - 100,000 IDPs</span>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <i style="background:#ff671f"></i> <span>50K-100K</span>
           </div>
-          <div style="display: flex; align-items: center; margin: 5px 0;">
-            <i style="background:#d22630"></i> <span>&gt; 100,000 IDPs</span>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <i style="background:#d22630"></i> <span>&gt; 100K</span>
           </div>
-          <hr style="margin: 10px 0; border-color: #eee;">
-          <div style="display: flex; align-items: center; margin: 5px 0;">
-            <svg width="18" height="18" style="margin-right: 8px;">
-              <circle cx="9" cy="9" r="8" fill="#418FDE" stroke="#fff" stroke-width="1"/>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <i style="background:#9c27b0"></i> <span>Cross-border</span>
+          </div>
+          <hr style="margin: 8px 0; border-color: #eee;">
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <svg width="16" height="16" style="margin-right: 6px;">
+              <circle cx="8" cy="8" r="6" fill="#418FDE" stroke="#fff"/>
             </svg>
-            <span>Destination Points</span>
+            <span>Destination</span>
           </div>
-          <div style="display: flex; align-items: center; margin: 5px 0;">
-            <svg width="18" height="18" style="margin-right: 8px;">
-              <circle cx="9" cy="9" r="8" fill="rgb(255, 103, 31)" stroke="#fff" stroke-width="1"/>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <svg width="16" height="16" style="margin-right: 6px;">
+              <circle cx="8" cy="8" r="6" fill="#ff671f" stroke="#fff"/>
             </svg>
-            <span>Origin Points</span>
+            <span>Origin</span>
+          </div>
+          <div style="display: flex; align-items: center; margin: 3px 0;">
+            <svg width="16" height="16" style="margin-right: 6px;">
+              <circle cx="8" cy="8" r="6" fill="#4CAF50" stroke="#fff"/>
+            </svg>
+            <span>Border Point</span>
           </div>
         `;
         return div;
