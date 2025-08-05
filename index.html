@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
     <title>Sudan Cross-Border Flow Visualization</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
-    <script src="https://unpkg.com/@loaders.gl/csv@latest/dist/dist.min.js"></script>
-    <script src="https://unpkg.com/@turf/turf@latest/turf.min.js"></script>
-    <script src="https://unpkg.com/canvas-flowmap-layer/dist.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/deck.gl@8.9.0/dist.min.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+    <script src="https://unpkg.com/canvas-flowmap-layer@1.1.0/dist.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; overflow: hidden; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
         #controls {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             background: white;
             padding: 10px;
             border-radius: 5px;
@@ -26,130 +25,136 @@
 <body>
     <div id="map"></div>
     <div id="controls">
-        <h3>Sudan Cross-Border Flows</h3>
+        <h3>Sudan Border Flows</h3>
         <div>
-            <label>Animation Speed: </label>
-            <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1">
+            <label>Speed: <span id="speed-value">1.0</span></label>
+            <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1">
         </div>
         <div>
-            <label>Particle Count: </label>
-            <input type="range" id="particles" min="100" max="5000" step="100" value="1000">
+            <label>Particles: <span id="particles-value">1000</span></label>
+            <input type="range" id="particles" min="100" max="3000" step="100" value="1000">
         </div>
     </div>
 
     <script>
-        // Define the border points data
-        const borderPoints = [
-            { name: "Um Dukhun", country: "Chad", y: 11.139, x: 22.966 },
-            { name: "Gallabat/Metema", country: "Ethiopia", y: 12.95798, x: 36.151888 },
-            { name: "Al Laffa", country: "Eretria", y: 15.15372, x: 36.4355 },
-            { name: "Argeen", country: "Egypt", y: 21.988934, x: 31.153322 },
-            { name: "Ashkeet", country: "Egypt", y: 22.000523, x: 31.511477 },
-            { name: "Adekonk", country: "Chad", y: 13.4623111, x: 22.2296523 }
-        ];
+        // Wait for all scripts to load
+        window.onload = function() {
+            if (!window.deck || !window.turf || !window.CanvasFlowmapLayer) {
+                alert("Error loading required libraries. Please check your internet connection.");
+                return;
+            }
 
-        // Define Khartoum as the central point in Sudan
-        const khartoum = { y: 15.5007, x: 32.5599 };
+            // Border points data
+            const borderPoints = [
+                { name: "Um Dukhun", country: "Chad", y: 11.139, x: 22.966 },
+                { name: "Gallabat/Metema", country: "Ethiopia", y: 12.95798, x: 36.151888 },
+                { name: "Al Laffa", country: "Eritrea", y: 15.15372, x: 36.4355 },
+                { name: "Argeen", country: "Egypt", y: 21.988934, x: 31.153322 },
+                { name: "Ashkeet", country: "Egypt", y: 22.000523, x: 31.511477 },
+                { name: "Adekonk", country: "Chad", y: 13.4623111, x: 22.2296523 }
+            ];
 
-        // Create flow data - from each border point to Khartoum
-        const flowData = borderPoints.map(point => {
-            return {
+            // Central point in Sudan (Khartoum)
+            const khartoum = { y: 15.5007, x: 32.5599, name: "Khartoum" };
+
+            // Create flow data
+            const flowData = borderPoints.map(point => ({
                 source: [point.x, point.y],
                 target: [khartoum.x, khartoum.y],
-                name: `${point.name} (${point.country}) to Khartoum`,
-                count: Math.floor(Math.random() * 1000) + 100 // Random flow count for visualization
-            };
-        });
+                name: `${point.name} to Khartoum`,
+                country: point.country,
+                count: 500 + Math.random() * 1000 // Random flow amount
+            }));
 
-        // Initialize the map
-        const map = new deck.MapView({
-            container: 'map',
-            controller: true,
-            initialViewState: {
-                longitude: 30.0,
-                latitude: 15.0,
-                zoom: 5,
-                pitch: 30,
-                bearing: 0
+            // Initialize deck.gl map
+            const deckgl = new deck.DeckGL({
+                container: 'map',
+                initialViewState: {
+                    longitude: 30.0,
+                    latitude: 15.0,
+                    zoom: 5,
+                    pitch: 30,
+                    bearing: 0
+                },
+                controller: true,
+                layers: []
+            });
+
+            // Function to update layers
+            function updateLayers(speed = 1, particles = 1000) {
+                const layers = [
+                    // Background map (using a simple tile layer)
+                    new deck.TileLayer({
+                        data: 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        minZoom: 0,
+                        maxZoom: 19,
+                        tileSize: 256
+                    }),
+
+                    // Flowmap layer
+                    new CanvasFlowmapLayer({
+                        id: 'flow-layer',
+                        data: flowData,
+                        getPath: d => [d.source, d.target],
+                        getWidth: d => Math.sqrt(d.count) * 0.3,
+                        getColor: d => {
+                            const colors = {
+                                'Chad': [255, 140, 0],
+                                'Ethiopia': [0, 191, 255],
+                                'Eritrea': [50, 205, 50],
+                                'Egypt': [138, 43, 226]
+                            };
+                            return colors[d.country] || [255, 0, 0];
+                        },
+                        maxWidth: 8,
+                        animationSpeed: speed,
+                        particleDensity: particles,
+                        particleSpeed: 1.5,
+                        particleWidth: 1.2
+                    }),
+
+                    // Border points
+                    new deck.ScatterplotLayer({
+                        id: 'border-points',
+                        data: borderPoints,
+                        getPosition: d => [d.x, d.y],
+                        getRadius: 5000,
+                        getFillColor: [255, 0, 0],
+                        pickable: true,
+                        getTooltip: d => `${d.name}, ${d.country}`
+                    }),
+
+                    // Khartoum point
+                    new deck.ScatterplotLayer({
+                        id: 'khartoum-point',
+                        data: [khartoum],
+                        getPosition: d => [d.x, d.y],
+                        getRadius: 8000,
+                        getFillColor: [0, 0, 255],
+                        pickable: true,
+                        getTooltip: d => d.name
+                    })
+                ];
+
+                deckgl.setProps({ layers });
             }
-        });
 
-        // Create the flowmap layer
-        const flowmapLayer = new CanvasFlowmapLayer({
-            id: 'canvas-flowmap-layer',
-            data: flowData,
-            getPath: d => [d.source, d.target],
-            getWidth: d => Math.sqrt(d.count) * 0.5,
-            getColor: d => {
-                // Different colors based on country
-                const colors = {
-                    'Chad': [255, 140, 0],    // Orange
-                    'Ethiopia': [0, 191, 255], // Blue
-                    'Eretria': [50, 205, 50], // Green
-                    'Egypt': [138, 43, 226]    // Purple
-                };
-                return colors[d.name.split('(')[1].split(')')[0]] || [255, 0, 0];
-            },
-            maxWidth: 10,
-            animationSpeed: 1,
-            particleDensity: 1000,
-            particleSpeed: 1.5,
-            particleWidth: 1.5,
-            getTooltip: d => `${d.name}\nFlow count: ${d.count}`
-        });
+            // Initial render
+            updateLayers();
 
-        // Add country borders and labels
-        const countryLayer = new deck.GeoJsonLayer({
-            id: 'geojson-layer',
-            data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson',
-            filled: true,
-            opacity: 0.2,
-            getFillColor: [200, 200, 200],
-            stroked: true,
-            getLineColor: [0, 0, 0],
-            getLineWidth: 1,
-            pickable: true
-        });
-
-        // Add border point markers
-        const borderMarkers = new deck.ScatterplotLayer({
-            id: 'border-markers',
-            data: borderPoints,
-            getPosition: d => [d.x, d.y],
-            getRadius: 5000,
-            getFillColor: [255, 0, 0],
-            pickable: true,
-            getTooltip: d => `${d.name} (${d.country})`
-        });
-
-        // Add Khartoum marker
-        const khartoumMarker = new deck.ScatterplotLayer({
-            id: 'khartoum-marker',
-            data: [khartoum],
-            getPosition: d => [d.x, d.y],
-            getRadius: 10000,
-            getFillColor: [0, 0, 255],
-            pickable: true,
-            getTooltip: d => `Khartoum, Sudan`
-        });
-
-        // Update layers when controls change
-        document.getElementById('speed').addEventListener('input', (e) => {
-            flowmapLayer.setProps({
-                animationSpeed: parseFloat(e.target.value)
+            // Control event listeners
+            document.getElementById('speed').addEventListener('input', function(e) {
+                const value = parseFloat(e.target.value);
+                document.getElementById('speed-value').textContent = value.toFixed(1);
+                updateLayers(value, parseInt(document.getElementById('particles').value));
             });
-        });
 
-        document.getElementById('particles').addEventListener('input', (e) => {
-            flowmapLayer.setProps({
-                particleDensity: parseInt(e.target.value)
+            document.getElementById('particles').addEventListener('input', function(e) {
+                const value = parseInt(e.target.value);
+                document.getElementById('particles-value').textContent = value;
+                updateLayers(parseFloat(document.getElementById('speed').value), value);
             });
-        });
-
-        // Add all layers to the map
-        map.setProps({
-            layers: [countryLayer, flowmapLayer, borderMarkers, khartoumMarker]
-        });
+        };
     </script>
 </body>
 </html>
