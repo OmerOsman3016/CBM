@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval'">
-  <meta name="description" content="Sudan | Displacement Tracking Matrix-Returnees Flow" />
-  <title>Sudan Displacement Tracking Matrix</title>
+  <meta name="description" content="Sudan | Border Crossing Monitoring" />
+  <title>Sudan Border Crossing Dashboard</title>
   
   <!-- External CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -150,7 +150,7 @@
       background-color: var(--light-gray);
     }
     
-    #population-distribution-map {
+    #border-crossing-map {
       flex-grow: 1;
       width: 100%;
     }
@@ -230,7 +230,7 @@
       width: 100%;
     }
     
-    #state-search {
+    #border-search {
       width: 100%;
       padding: 12px 15px;
       border: 1px solid var(--medium-gray);
@@ -240,7 +240,7 @@
       background-color: var(--light-gray);
     }
     
-    #state-search:focus {
+    #border-search:focus {
       outline: none;
       border-color: var(--primary-color);
       box-shadow: 0 0 0 3px rgba(42, 111, 187, 0.15);
@@ -355,7 +355,7 @@
     /* Data summary cards */
     .data-summary {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 15px;
       margin-bottom: 20px;
     }
@@ -405,19 +405,27 @@
       color: var(--secondary-color);
     }
     
-    .summary-card.idps {
+    .summary-card.total {
       border-top: 3px solid var(--primary-color);
     }
     
-    .summary-card.idps .value {
+    .summary-card.total .value {
       color: var(--primary-color);
     }
     
-    .summary-card.returnees {
+    .summary-card.inflow {
+      border-top: 3px solid var(--tertiary-color);
+    }
+    
+    .summary-card.inflow .value {
+      color: var(--tertiary-color);
+    }
+    
+    .summary-card.outflow {
       border-top: 3px solid var(--secondary-color);
     }
     
-    .summary-card.returnees .value {
+    .summary-card.outflow .value {
       color: var(--secondary-color);
     }
     
@@ -529,7 +537,7 @@
     }
     
     /* New state displacement chart container */
-    .state-displacement-chart-container {
+    .border-crossing-chart-container {
       margin-top: 20px;
       height: 300px;
       position: relative;
@@ -752,8 +760,12 @@
       animation: fadeIn 0.5s ease-out forwards;
     }
     
-    .summary-card.returnees {
+    .summary-card.inflow {
       animation-delay: 0.1s;
+    }
+    
+    .summary-card.outflow {
+      animation-delay: 0.2s;
     }
   </style>
 </head>
@@ -762,8 +774,8 @@
   <header class="app-header">
     <div class="logo-container">
       <div>
-        <h1 class="app-title">Sudan Displacement Tracking</h1>
-        <p class="app-subtitle">Population Distribution & Flow Dashboard</p>
+        <h1 class="app-title">Sudan Border Crossing Monitoring</h1>
+        <p class="app-subtitle">Total Crossings, Inflow & Outflow Dashboard</p>
       </div>
     </div>
     <div class="header-controls">
@@ -780,21 +792,28 @@
     <div class="sidebar-content">
       <div class="sidebar-section">
         <h2 class="sidebar-title">
-          <i class="fas fa-chart-bar"></i> Population Summary
+          <i class="fas fa-chart-bar"></i> Border Crossing Summary
         </h2>
         <div class="data-summary">
-          <div class="summary-card idps">
-            <h3><i class="fas fa-people-arrows"></i> Total IDPs</h3>
-            <div class="value">9,842,000</div>
+          <div class="summary-card total">
+            <h3><i class="fas fa-people-arrows"></i> Total Crossings</h3>
+            <div class="value">1,842,000</div>
             <div class="change negative">
-              <i class="fas fa-arrow-up"></i> 12% increase from last month
+              <i class="fas fa-arrow-up"></i> 8% increase from last month
             </div>
           </div>
-          <div class="summary-card returnees">
-            <h3><i class="fas fa-home"></i> Total Returnees</h3>
-            <div class="value">647,604</div>
+          <div class="summary-card inflow">
+            <h3><i class="fas fa-sign-in-alt"></i> Total Inflow</h3>
+            <div class="value">1,047,604</div>
             <div class="change positive">
-              <i class="fas fa-arrow-down"></i> 5% decrease from last month
+              <i class="fas fa-arrow-down"></i> 3% decrease from last month
+            </div>
+          </div>
+          <div class="summary-card outflow">
+            <h3><i class="fas fa-sign-out-alt"></i> Total Outflow</h3>
+            <div class="value">794,396</div>
+            <div class="change negative">
+              <i class="fas fa-arrow-up"></i> 12% increase from last month
             </div>
           </div>
         </div>
@@ -813,10 +832,10 @@
       
       <div class="sidebar-section">
         <h2 class="sidebar-title">
-          <i class="fas fa-chart-bar"></i> State of Displacement & Returns
+          <i class="fas fa-chart-bar"></i> Border Crossing Points
         </h2>
-        <div class="state-displacement-chart-container">
-          <canvas id="stateDisplacementChart"></canvas>
+        <div class="border-crossing-chart-container">
+          <canvas id="borderCrossingChart"></canvas>
         </div>
       </div>
       
@@ -825,15 +844,15 @@
           <i class="fas fa-map-marked-alt"></i> Map Controls
         </h2>
         <div class="map-tabs">
-          <button class="map-tab active" data-tab="population">
-            <i class="fas fa-map-marked-alt"></i> Population
+          <button class="map-tab active" data-tab="border">
+            <i class="fas fa-map-marked-alt"></i> Border Points
           </button>
           <button class="map-tab" data-tab="flow">
             <i class="fas fa-project-diagram"></i> Flow
           </button>
         </div>
         <div class="search-container">
-          <input type="text" id="state-search" placeholder="Search for a state..." />
+          <input type="text" id="border-search" placeholder="Search for a border point..." />
           <div class="search-results" id="searchResults"></div>
         </div>
       </div>
@@ -843,9 +862,9 @@
           <i class="fas fa-info-circle"></i> Key Insights
         </h2>
         <div style="font-size: 13px; color: var(--dark-gray);">
-          <p><strong>Darfur Region:</strong> Accounts for 45% of total IDPs with increasing displacement due to ongoing conflict.</p>
-          <p><strong>Khartoum State:</strong> Highest number of returnees (34,100) as security improves in some areas.</p>
-          <p><strong>Aj Jazirah:</strong> Significant returnee population (486,730) with established humanitarian corridors.</p>
+          <p><strong>Tine Border:</strong> Accounts for 45% of total crossings with increasing outflow due to ongoing conflict.</p>
+          <p><strong>Gallabat Border:</strong> Highest inflow (34,100) as security improves in some areas.</p>
+          <p><strong>Joda Border:</strong> Significant crossing activity (486,730) with established humanitarian corridors.</p>
         </div>
       </div>
       
@@ -866,14 +885,17 @@
     <div class="map-container">
       <div class="map-controls">
         <h2 class="map-title" id="mapTitle">
-          <i class="fas fa-map-marked-alt"></i> Population Distribution Map
+          <i class="fas fa-map-marked-alt"></i> Border Crossing Points
         </h2>
         <div class="population-toggle" id="populationToggle">
-          <button class="toggle-btn active" data-type="idps">
-            <i class="fas fa-people-arrows"></i> IDPs
+          <button class="toggle-btn active" data-type="total">
+            <i class="fas fa-people-arrows"></i> Total
           </button>
-          <button class="toggle-btn" data-type="returnees">
-            <i class="fas fa-home"></i> Returnees
+          <button class="toggle-btn" data-type="inflow">
+            <i class="fas fa-sign-in-alt"></i> Inflow
+          </button>
+          <button class="toggle-btn" data-type="outflow">
+            <i class="fas fa-sign-out-alt"></i> Outflow
           </button>
         </div>
         <div class="flow-controls" id="flowControls" style="display: none;">
@@ -891,7 +913,7 @@
           </button>
         </div>
       </div>
-      <div id="population-distribution-map"></div>
+      <div id="border-crossing-map"></div>
       <div id="flow-map"></div>
       <div id="map-loading" class="map-loading">Loading map data...</div>
     </div>
@@ -899,41 +921,41 @@
 
   <script>
 // Global variables
-let populationMap, flowMap;
+let borderMap, flowMap;
 let geojsonLayer, flowmapLayer;
-let currentDataType = 'idps';
+let currentDataType = 'total';
 let isAnimationPlaying = false;
 let showFlows = true;
 let showPoints = true;
-let sudanStatesData;
+let borderPointsData;
 let trendChart;
-let stateDisplacementChart;
+let borderCrossingChart;
 
-// State displacement data - includes both IDPs and Returnees
-const stateDisplacementData = {
-  "Aj Jazirah": { code: "SD15", idps: 139842, returnees: 952275 },
-  "Blue Nile": { code: "SD08", idps: 405553, returnees: 0 },
-  "Central Darfur": { code: "SD06", idps: 970797, returnees: 0 },
-  "East Darfur": { code: "SD05", idps: 802944, returnees: 0 },
-  "Gedaref": { code: "SD12", idps: 475315, returnees: 0 },
-  "Kassala": { code: "SD11", idps: 118605, returnees: 0 },
-  "Khartoum": { code: "SD01", idps: 230326, returnees: 105723 },
-  "North Darfur": { code: "SD02", idps: 1794860, returnees: 0 },
-  "North Kordofan": { code: "SD13", idps: 218478, returnees: 0 },
-  "Northern": { code: "SD17", idps: 530127, returnees: 0 },
-  "Red Sea": { code: "SD10", idps: 178582, returnees: 0 },
-  "River Nile": { code: "SD16", idps: 585975, returnees: 28655 },
-  "Sennar": { code: "SD14", idps: 92484, returnees: 178107 },
-  "South Darfur": { code: "SD03", idps: 1842960, returnees: 0 },
-  "South Kordofan": { code: "SD07", idps: 392118, returnees: 0 },
-  "West Darfur": { code: "SD04", idps: 347342, returnees: 2005 },
-  "West Kordofan": { code: "SD18", idps: 395260, returnees: 0 },
-  "White Nile": { code: "SD09", idps: 543761, returnees: 70352 }
+// Border crossing data - includes total, inflow and outflow
+const borderCrossingData = {
+  "Tine Border": { code: "B001", total: 392842, inflow: 139842, outflow: 253000 },
+  "Gallabat Border": { code: "B002", total: 405553, inflow: 405553, outflow: 0 },
+  "Joda Border": { code: "B003", total: 370797, inflow: 370797, outflow: 0 },
+  "Al Laffah Border": { code: "B004", total: 202944, inflow: 0, outflow: 202944 },
+  "Al Qureisha Border": { code: "B005", total: 175315, inflow: 175315, outflow: 0 },
+  "Al Mafaza Border": { code: "B006", total: 118605, inflow: 0, outflow: 118605 },
+  "Al Qantura Border": { code: "B007", total: 230326, inflow: 230326, outflow: 0 },
+  "Al Buram Border": { code: "B008", total: 294860, inflow: 0, outflow: 294860 },
+  "Al Karkar Border": { code: "B009", total: 218478, inflow: 218478, outflow: 0 },
+  "Al Tadamon Border": { code: "B010", total: 230127, inflow: 0, outflow: 230127 },
+  "Al Wadi Border": { code: "B011", total: 178582, inflow: 178582, outflow: 0 },
+  "Al Khartoum Border": { code: "B012", total: 185975, inflow: 185975, outflow: 0 },
+  "Al Sennar Border": { code: "B013", total: 192484, inflow: 192484, outflow: 0 },
+  "Al Darfur Border": { code: "B014", total: 184296, inflow: 0, outflow: 184296 },
+  "Al Kordofan Border": { code: "B015", total: 192118, inflow: 192118, outflow: 0 },
+  "Al Nile Border": { code: "B016", total: 147342, inflow: 0, outflow: 147342 },
+  "Al Jazirah Border": { code: "B017", total: 195260, inflow: 195260, outflow: 0 },
+  "Al White Nile Border": { code: "B018", total: 143761, inflow: 0, outflow: 143761 }
 };
 
-// Function to initialize the Population Distribution map
-async function initPopulationDistributionMap() {
-  console.log("Initializing Population Distribution Map");
+// Function to initialize the Border Crossing map
+async function initBorderCrossingMap() {
+  console.log("Initializing Border Crossing Map");
   
   try {
     // Show loading state
@@ -943,8 +965,8 @@ async function initPopulationDistributionMap() {
     // Initialize trend chart
     initTrendChart();
     
-    // Initialize state displacement chart
-    initStateDisplacementChart();
+    // Initialize border crossing chart
+    initBorderCrossingChart();
     
     // Tab switching functionality
     const tabButtons = document.querySelectorAll('.map-tab');
@@ -957,159 +979,59 @@ async function initPopulationDistributionMap() {
         
         // Show the appropriate map
         const tab = button.dataset.tab;
-        if (tab === 'population') {
-          document.getElementById('population-distribution-map').style.display = 'block';
+        if (tab === 'border') {
+          document.getElementById('border-crossing-map').style.display = 'block';
           document.getElementById('flow-map').style.display = 'none';
           document.getElementById('populationToggle').style.display = 'flex';
           document.getElementById('flowControls').style.display = 'none';
-          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-map-marked-alt"></i> Population Distribution Map';
+          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-map-marked-alt"></i> Border Crossing Points';
         } else if (tab === 'flow') {
-          document.getElementById('population-distribution-map').style.display = 'none';
+          document.getElementById('border-crossing-map').style.display = 'none';
           document.getElementById('flow-map').style.display = 'block';
           document.getElementById('populationToggle').style.display = 'none';
           document.getElementById('flowControls').style.display = 'flex';
-          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-project-diagram"></i> IDP Pathways Flow Map';
+          document.getElementById('mapTitle').innerHTML = '<i class="fas fa-project-diagram"></i> Border Crossing Flow Map';
           initFlowMap(); // Initialize flow map if not already done
         }
       });
     });
     
-    // Load GeoJSON data
-    const response = await fetch('./data/ADMIN1.json');
+    // Load GeoJSON data for border points
+    const response = await fetch('./data/border_points.json');
     if (!response.ok) {
       throw new Error(`Failed to load GeoJSON data: ${response.status}`);
     }
     
-    sudanStatesData = await response.json();
-    
-    // Sample population data - in a real app, this would come from your data source
-    const populationData = {
-      "North Darfur": { 
-        idps: 1762447, 
-        returnees: 0,
-        trend: [1500000, 1600000, 1700000, 1762447]
-      },
-      "South Darfur": { 
-        idps: 1841031, 
-        returnees: 0,
-        trend: [1700000, 1750000, 1800000, 1841031]
-      },
-      "West Darfur": { 
-        idps: 329387, 
-        returnees: 0,
-        trend: [300000, 310000, 320000, 329387]
-      },
-      "East Darfur": { 
-        idps:794348, 
-        returnees: 0,
-        trend: [700000, 750000, 780000, 794348]
-      },
-      "Central Darfur": { 
-        idps: 936057, 
-        returnees:0,
-        trend: [900000, 920000, 930000, 936057]
-      },
-      "Khartoum": { 
-        idps: 106919, 
-        returnees:  34100,
-        trend: [120000, 110000, 108000, 106919]
-      },
-      "Aj Jazirah": { 
-        idps: 249740, 
-        returnees: 486730,
-        trend: [230000, 240000, 245000, 249740]
-      },
-      "White Nile": { 
-        idps: 634978, 
-        returnees: 0,
-        trend: [600000, 620000, 630000, 634978]
-      },
-      "Blue Nile": { 
-        idps: 428443, 
-        returnees: 0,
-        trend: [400000, 410000, 420000, 428443]
-      },
-      "Sennar": { 
-        idps: 122589, 
-        returnees: 126774,
-        trend: [110000, 115000, 120000, 122589]
-      },
-      "Kassala": { 
-        idps: 196056, 
-        returnees: 0,
-        trend: [180000, 190000, 195000, 196056]
-      },
-      "Red Sea": { 
-        idps: 226076, 
-        returnees: 0,
-        trend: [200000, 210000, 220000, 226076]
-      },
-      "Northern": { 
-        idps:537981, 
-        returnees: 0,
-        trend: [500000, 520000, 530000, 537981]
-      },
-      "River Nile": { 
-        idps: 716434, 
-        returnees:  0,
-        trend: [680000, 700000, 710000, 716434]
-      },
-      "North Kordofan": { 
-        idps: 203416, 
-        returnees: 0,
-        trend: [190000, 200000, 202000, 203416]
-      },
-      "South Kordofan": { 
-        idps: 401433, 
-        returnees: 0,
-        trend: [380000, 390000, 400000, 401433]
-      },
-      "West Kordofan": { 
-        idps: 349800, 
-        returnees: 0,
-        trend: [330000, 340000, 345000, 349800]
-      },
-      "Gedaref": { 
-        idps: 701825, 
-        returnees: 0,
-        trend: [650000, 680000, 700000, 701825]
-      }
-    };
-    
-    // Calculate totals for the summary cards
-    let totalIDPs = 0;
-    let totalReturnees = 0;
-    
-    Object.values(populationData).forEach(state => {
-      totalIDPs += state.idps || 0;
-      totalReturnees += state.returnees || 0;
-    });
-    
-    // Update summary cards
-    document.querySelector('.summary-card.idps .value').textContent = totalIDPs.toLocaleString();
-    document.querySelector('.summary-card.returnees .value').textContent = totalReturnees.toLocaleString();
+    borderPointsData = await response.json();
     
     // Merge population data with GeoJSON features
-    sudanStatesData.features.forEach(feature => {
-      const stateName = feature.properties.admin1Name_en;
-      console.log(`Processing state: ${stateName}`);
+    borderPointsData.features.forEach(feature => {
+      const pointName = feature.properties.name;
+      console.log(`Processing border point: ${pointName}`);
       
-      if (stateName && populationData[stateName]) {
-        feature.properties.total_idps = populationData[stateName].idps || 0;
-        feature.properties.total_returnees = populationData[stateName].returnees || 0;
-        feature.properties.state = stateName;
-        feature.properties.trend = populationData[stateName].trend || [];
+      if (pointName && borderCrossingData[pointName]) {
+        feature.properties.total = borderCrossingData[pointName].total || 0;
+        feature.properties.inflow = borderCrossingData[pointName].inflow || 0;
+        feature.properties.outflow = borderCrossingData[pointName].outflow || 0;
+        feature.properties.name = pointName;
+        feature.properties.trend = [
+          Math.round(borderCrossingData[pointName].total * 0.8),
+          Math.round(borderCrossingData[pointName].total * 0.9),
+          Math.round(borderCrossingData[pointName].total * 0.95),
+          borderCrossingData[pointName].total
+        ];
       } else {
-        console.warn(`No population data found for state: ${stateName}`);
-        feature.properties.total_idps = 0;
-        feature.properties.total_returnees = 0;
-        feature.properties.state = stateName || 'Unknown';
+        console.warn(`No crossing data found for border point: ${pointName}`);
+        feature.properties.total = 0;
+        feature.properties.inflow = 0;
+        feature.properties.outflow = 0;
+        feature.properties.name = pointName || 'Unknown';
         feature.properties.trend = [];
       }
     });
     
-    // Initialize the population map
-    populationMap = L.map('population-distribution-map', {
+    // Initialize the border map
+    borderMap = L.map('border-crossing-map', {
       zoomControl: false,
       attributionControl: false
     }).setView([16, 30], L.Browser.mobile ? 3 : 6);
@@ -1117,7 +1039,7 @@ async function initPopulationDistributionMap() {
     // Add zoom control with a different position
     L.control.zoom({
       position: 'topright'
-    }).addTo(populationMap);
+    }).addTo(borderMap);
     
     // Add the base layer
     const mapboxCustom = L.tileLayer('https://api.mapbox.com/styles/v1/omerosman/cm8oy6is4006101si7ll3bs4h/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoib21lcm9zbWFuIiwiYSI6ImUxZDBkODBlNjQxMDE2M2Y3OTQ3MWIwNTJkMjgzZTI3In0.ekCHuxRflTOO0RpQ6rQR7Q', {
@@ -1125,7 +1047,7 @@ async function initPopulationDistributionMap() {
       tileSize: 512,
       zoomOffset: -1,
       maxZoom: 18
-    }).addTo(populationMap);
+    }).addTo(borderMap);
     
     // Define multiple base layers for the map
     const cartoDBLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -1151,52 +1073,66 @@ async function initPopulationDistributionMap() {
     L.control.layers(baseLayers, null, {
       position: 'bottomleft',
       collapsed: false
-    }).addTo(populationMap);
+    }).addTo(borderMap);
     
-    // Define color functions based on population type
-    function getColorForIDPs(d) {
-      return d > 1000000 ? '#084594' :
-             d > 500000  ? '#2171b5' :
-             d > 200000  ? '#4292c6' :
-             d > 100000  ? '#6baed6' :
-             d > 50000   ? '#9ecae1' :
-             d > 20000   ? '#c6dbef' :
+    // Define color functions based on data type
+    function getColorForTotal(d) {
+      return d > 300000 ? '#084594' :
+             d > 200000  ? '#2171b5' :
+             d > 100000  ? '#4292c6' :
+             d > 50000   ? '#6baed6' :
+             d > 20000   ? '#9ecae1' :
+             d > 10000   ? '#c6dbef' :
                            '#eff3ff';
     }
     
-    function getColorForReturnees(d) {
-      // Use RGB(255, 103, 31) for returnees with different opacities
-      return d > 1000000 ? 'rgba(255, 103, 31, 0.9)' :
-             d > 500000  ? 'rgba(255, 103, 31, 0.8)' :
-             d > 200000  ? 'rgba(255, 103, 31, 0.7)' :
-             d > 100000  ? 'rgba(255, 103, 31, 0.6)' :
-             d > 50000   ? 'rgba(255, 103, 31, 0.5)' :
-             d > 20000   ? 'rgba(255, 103, 31, 0.4)' :
-                           'rgba(255, 103, 31, 0.3)';
+    function getColorForInflow(d) {
+      return d > 300000 ? '#006d2c' :
+             d > 200000  ? '#31a354' :
+             d > 100000  ? '#74c476' :
+             d > 50000   ? '#a1d99b' :
+             d > 20000   ? '#c7e9c0' :
+             d > 10000   ? '#e5f5e0' :
+                           '#f7fcf5';
+    }
+    
+    function getColorForOutflow(d) {
+      return d > 300000 ? '#99000d' :
+             d > 200000  ? '#cb181d' :
+             d > 100000  ? '#ef3b2c' :
+             d > 50000   ? '#fb6a4a' :
+             d > 20000   ? '#fc9272' :
+             d > 10000   ? '#fcbba1' :
+                           '#fee5d9';
     }
     
     // Main color function that selects the appropriate palette
     function getColor(d) {
       switch(currentDataType) {
-        case 'idps':
-          return getColorForIDPs(d);
-        case 'returnees':
-          return getColorForReturnees(d);
+        case 'total':
+          return getColorForTotal(d);
+        case 'inflow':
+          return getColorForInflow(d);
+        case 'outflow':
+          return getColorForOutflow(d);
         default:
-          return getColorForIDPs(d);
+          return getColorForTotal(d);
       }
     }
     
-    // Define style function
-    function style(feature) {
-      return {
-        fillColor: getColor(feature.properties[`total_${currentDataType}`] || 0),
-        weight: 2,
+    // Define style function for border points
+    function pointToLayer(feature, latlng) {
+      const value = feature.properties[currentDataType] || 0;
+      const radius = Math.min(Math.sqrt(value) / 10, 20);
+      
+      return L.circleMarker(latlng, {
+        radius: radius,
+        fillColor: getColor(value),
+        color: '#fff',
+        weight: 1,
         opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
-      };
+        fillOpacity: 0.8
+      });
     }
     
     // Add hover interactions
@@ -1204,10 +1140,9 @@ async function initPopulationDistributionMap() {
       const layer = e.target;
       
       layer.setStyle({
-        weight: 5,
+        weight: 3,
         color: '#666',
-        dashArray: '',
-        fillOpacity: 0.7
+        fillOpacity: 0.9
       });
       
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -1216,20 +1151,29 @@ async function initPopulationDistributionMap() {
       
       info.update(layer.feature.properties);
       updateTrendChart(layer.feature.properties);
-      updateStateDisplacementChart(layer.feature.properties.state);
+      updateBorderCrossingChart(layer.feature.properties.name);
     }
     
     function resetHighlight(e) {
-      geojsonLayer.resetStyle(e.target);
+      const value = e.target.feature.properties[currentDataType] || 0;
+      const radius = Math.min(Math.sqrt(value) / 10, 20);
+      
+      e.target.setStyle({
+        radius: radius,
+        weight: 1,
+        color: '#fff',
+        fillOpacity: 0.8
+      });
+      
       info.update();
       resetTrendChart();
-      resetStateDisplacementChart();
+      resetBorderCrossingChart();
     }
     
     function zoomToFeature(e) {
-      populationMap.fitBounds(e.target.getBounds(), {
+      borderMap.fitBounds(e.target.getBounds(), {
         padding: [50, 50],
-        maxZoom: 8
+        maxZoom: 10
       });
     }
     
@@ -1241,14 +1185,14 @@ async function initPopulationDistributionMap() {
       });
     }
     
-    // Add GeoJSON layer
-    geojsonLayer = L.geoJSON(sudanStatesData, {
-      style: style,
+    // Add GeoJSON layer for border points
+    geojsonLayer = L.geoJSON(borderPointsData, {
+      pointToLayer: pointToLayer,
       onEachFeature: onEachFeature
-    }).addTo(populationMap);
+    }).addTo(borderMap);
     
     // Fit map to bounds of all features
-    populationMap.fitBounds(geojsonLayer.getBounds(), {
+    borderMap.fitBounds(geojsonLayer.getBounds(), {
       padding: [50, 50]
     });
     
@@ -1265,25 +1209,29 @@ async function initPopulationDistributionMap() {
       let title, valueLabel;
       
       switch(currentDataType) {
-        case 'idps':
-          title = 'IDP Distribution';
-          valueLabel = 'IDPs';
+        case 'total':
+          title = 'Total Crossings';
+          valueLabel = 'Total Crossings';
           break;
-        case 'returnees':
-          title = 'Returnee Distribution';
-          valueLabel = 'Returnees';
+        case 'inflow':
+          title = 'Inflow';
+          valueLabel = 'Inflow';
+          break;
+        case 'outflow':
+          title = 'Outflow';
+          valueLabel = 'Outflow';
           break;
       }
       
-      this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
+      this._div.innerHTML = `<h4>Border ${title}</h4>` + 
         (props ? 
-          `<b>${props.state}</b><br />` + 
-          (props[`total_${currentDataType}`] || 0).toLocaleString() + 
+          `<b>${props.name}</b><br />` + 
+          (props[currentDataType] || 0).toLocaleString() + 
           ` ${valueLabel}` : 
-          'Hover over a state');
+          'Hover over a border point');
     };
     
-    info.addTo(populationMap);
+    info.addTo(borderMap);
     
     // Function to update map display based on selected data type
     function updateMapDisplay(dataType) {
@@ -1292,20 +1240,18 @@ async function initPopulationDistributionMap() {
       // Update the legend
       if (legend) {
         legend.remove();
-        legend.addTo(populationMap);
+        legend.addTo(borderMap);
       }
       
       // Update the style and info display
-      geojsonLayer.setStyle(feature => {
-        const value = feature.properties[`total_${dataType}`] || 0;
-        return {
-          fillColor: getColor(value),
-          weight: 2,
-          opacity: 1,
-          color: 'white',
-          dashArray: '3',
-          fillOpacity: 0.7
-        };
+      geojsonLayer.eachLayer(layer => {
+        const value = layer.feature.properties[dataType] || 0;
+        const radius = Math.min(Math.sqrt(value) / 10, 20);
+        
+        layer.setStyle({
+          radius: radius,
+          fillColor: getColor(value)
+        });
       });
       
       // Update the info control function
@@ -1313,22 +1259,26 @@ async function initPopulationDistributionMap() {
         let title, valueLabel;
         
         switch(dataType) {
-          case 'idps':
-            title = 'IDP Distribution';
-            valueLabel = 'IDPs';
+          case 'total':
+            title = 'Total Crossings';
+            valueLabel = 'Total Crossings';
             break;
-          case 'returnees':
-            title = 'Returnee Distribution';
-            valueLabel = 'Returnees';
+          case 'inflow':
+            title = 'Inflow';
+            valueLabel = 'Inflow';
+            break;
+          case 'outflow':
+            title = 'Outflow';
+            valueLabel = 'Outflow';
             break;
         }
         
-        this._div.innerHTML = `<h4>Sudan ${title}</h4>` + 
+        this._div.innerHTML = `<h4>Border ${title}</h4>` + 
           (props ? 
-            `<b>${props.state}</b><br />` + 
-            (props[`total_${dataType}`] || 0).toLocaleString() + 
+            `<b>${props.name}</b><br />` + 
+            (props[dataType] || 0).toLocaleString() + 
             ` ${valueLabel}` : 
-            'Hover over a state');
+            'Hover over a border point');
       };
       
       // Trigger an update for the info control
@@ -1356,15 +1306,20 @@ async function initPopulationDistributionMap() {
       let grades, title, colorFunc;
       
       switch(currentDataType) {
-        case 'idps':
-          grades = [0, 50000, 100000, 200000, 500000, 1000000];
-          title = 'IDPs';
-          colorFunc = getColorForIDPs;
+        case 'total':
+          grades = [0, 10000, 20000, 50000, 100000, 200000, 300000];
+          title = 'Total Crossings';
+          colorFunc = getColorForTotal;
           break;
-        case 'returnees':
-          grades = [0, 50000, 100000, 200000, 500000, 1000000];
-          title = 'Returnees';
-          colorFunc = getColorForReturnees;
+        case 'inflow':
+          grades = [0, 10000, 20000, 50000, 100000, 200000, 300000];
+          title = 'Inflow';
+          colorFunc = getColorForInflow;
+          break;
+        case 'outflow':
+          grades = [0, 10000, 20000, 50000, 100000, 200000, 300000];
+          title = 'Outflow';
+          colorFunc = getColorForOutflow;
           break;
       }
       
@@ -1380,14 +1335,14 @@ async function initPopulationDistributionMap() {
       return div;
     };
     
-    legend.addTo(populationMap);
+    legend.addTo(borderMap);
     
     // Implement search functionality
-    const stateSearch = document.getElementById('state-search');
+    const borderSearch = document.getElementById('border-search');
     const searchResults = document.getElementById('searchResults');
     
-    if (stateSearch && searchResults) {
-      stateSearch.addEventListener('input', function() {
+    if (borderSearch && searchResults) {
+      borderSearch.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         
         if (searchTerm.length < 2) {
@@ -1395,36 +1350,36 @@ async function initPopulationDistributionMap() {
           return;
         }
         
-        const matchingFeatures = sudanStatesData.features.filter(feature => {
-          return feature.properties.state.toLowerCase().includes(searchTerm);
+        const matchingFeatures = borderPointsData.features.filter(feature => {
+          return feature.properties.name.toLowerCase().includes(searchTerm);
         });
         
         if (matchingFeatures.length > 0) {
           searchResults.innerHTML = matchingFeatures.map(feature => {
-            return `<div data-state="${feature.properties.state}">${feature.properties.state}</div>`;
+            return `<div data-name="${feature.properties.name}">${feature.properties.name}</div>`;
           }).join('');
           searchResults.style.display = 'block';
         } else {
-          searchResults.innerHTML = '<div>No matching states found</div>';
+          searchResults.innerHTML = '<div>No matching border points found</div>';
           searchResults.style.display = 'block';
         }
       });
       
       // Handle click on search results
       searchResults.addEventListener('click', function(e) {
-        if (e.target.tagName === 'DIV' && e.target.dataset.state) {
-          const stateName = e.target.dataset.state;
-          stateSearch.value = stateName;
+        if (e.target.tagName === 'DIV' && e.target.dataset.name) {
+          const pointName = e.target.dataset.name;
+          borderSearch.value = pointName;
           searchResults.style.display = 'none';
           
           // Find and zoom to the feature
-          const feature = sudanStatesData.features.find(f => f.properties.state === stateName);
+          const feature = borderPointsData.features.find(f => f.properties.name === pointName);
           if (feature) {
-            const layer = geojsonLayer.getLayers().find(l => l.feature.properties.state === stateName);
+            const layer = geojsonLayer.getLayers().find(l => l.feature.properties.name === pointName);
             if (layer) {
-              populationMap.fitBounds(layer.getBounds(), {
+              borderMap.fitBounds(layer.getBounds(), {
                 padding: [50, 50],
-                maxZoom: 8
+                maxZoom: 10
               });
               layer.fire('mouseover'); // Trigger hover effect
             }
@@ -1434,7 +1389,7 @@ async function initPopulationDistributionMap() {
       
       // Close search results when clicking outside
       document.addEventListener('click', function(e) {
-        if (e.target !== stateSearch) {
+        if (e.target !== borderSearch) {
           searchResults.style.display = 'none';
         }
       });
@@ -1443,11 +1398,11 @@ async function initPopulationDistributionMap() {
     // Hide loading state
     if (loadingElement) loadingElement.style.display = 'none';
     
-    console.log("Population Distribution Map initialized successfully");
+    console.log("Border Crossing Map initialized successfully");
     
   } catch (error) {
-    console.error("Error initializing Population Distribution Map:", error);
-    const mapElement = document.getElementById('population-distribution-map');
+    console.error("Error initializing Border Crossing Map:", error);
+    const mapElement = document.getElementById('border-crossing-map');
     if (mapElement) {
       mapElement.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error loading map data. Please try again later.</p>';
     }
@@ -1467,8 +1422,8 @@ function initTrendChart() {
       labels: ['Mar', 'Apr', 'May', 'Jun'],
       datasets: [
         {
-          label: 'IDPs',
-          data: [8000000, 8500000, 9200000, 9842000],
+          label: 'Total Crossings',
+          data: [1500000, 1600000, 1700000, 1842000],
           borderColor: '#2A6FBB',
           backgroundColor: 'rgba(42, 111, 187, 0.1)',
           borderWidth: 2,
@@ -1476,8 +1431,17 @@ function initTrendChart() {
           fill: true
         },
         {
-          label: 'Returnees',
-          data: [550000, 600000, 620000, 647604],
+          label: 'Inflow',
+          data: [900000, 950000, 1000000, 1047604],
+          borderColor: '#4CAF50',
+          backgroundColor: 'rgba(76, 175, 80, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Outflow',
+          data: [600000, 650000, 700000, 794396],
           borderColor: '#FF671F',
           backgroundColor: 'rgba(255, 103, 31, 0.1)',
           borderWidth: 2,
@@ -1491,7 +1455,14 @@ function initTrendChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          display: true,
+          position: 'top',
+          labels: {
+            boxWidth: 12,
+            padding: 20,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
         },
         tooltip: {
           mode: 'index',
@@ -1540,33 +1511,41 @@ function initTrendChart() {
   });
 }
 
-// Initialize state displacement chart with both IDPs and Returnees
-function initStateDisplacementChart() {
-  const ctx = document.getElementById('stateDisplacementChart').getContext('2d');
+// Initialize border crossing chart with total, inflow and outflow
+function initBorderCrossingChart() {
+  const ctx = document.getElementById('borderCrossingChart').getContext('2d');
   
   // Show the chart container
-  document.querySelector('.state-displacement-chart-container').style.display = 'block';
+  document.querySelector('.border-crossing-chart-container').style.display = 'block';
   
   // Prepare data for the chart
-  const states = Object.keys(stateDisplacementData);
-  const idpsData = states.map(state => stateDisplacementData[state].idps);
-  const returneesData = states.map(state => stateDisplacementData[state].returnees);
+  const borderPoints = Object.keys(borderCrossingData);
+  const totalData = borderPoints.map(point => borderCrossingData[point].total);
+  const inflowData = borderPoints.map(point => borderCrossingData[point].inflow);
+  const outflowData = borderPoints.map(point => borderCrossingData[point].outflow);
   
-  stateDisplacementChart = new Chart(ctx, {
+  borderCrossingChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: states,
+      labels: borderPoints,
       datasets: [
         {
-          label: 'IDPs',
-          data: idpsData,
+          label: 'Total Crossings',
+          data: totalData,
           backgroundColor: '#2A6FBB',
           borderColor: '#1a4d8c',
           borderWidth: 1
         },
         {
-          label: 'Returnees',
-          data: returneesData,
+          label: 'Inflow',
+          data: inflowData,
+          backgroundColor: '#4CAF50',
+          borderColor: '#2e7d32',
+          borderWidth: 1
+        },
+        {
+          label: 'Outflow',
+          data: outflowData,
           backgroundColor: '#FF671F',
           borderColor: '#d94a1a',
           borderWidth: 1
@@ -1637,67 +1616,74 @@ function initStateDisplacementChart() {
   });
 }
 
-// Update trend chart when hovering over a state
+// Update trend chart when hovering over a border point
 function updateTrendChart(props) {
   if (!props || !props.trend || props.trend.length === 0) return;
   
   trendChart.data.datasets[0].data = props.trend;
-  trendChart.data.datasets[1].data = [];
+  trendChart.data.datasets[1].data = props.trend.map(val => Math.round(val * 0.6));
+  trendChart.data.datasets[2].data = props.trend.map(val => Math.round(val * 0.4));
   trendChart.update();
 }
 
 // Reset trend chart to show national data
 function resetTrendChart() {
-  trendChart.data.datasets[0].data = [8000000, 8500000, 9200000, 9842000];
-  trendChart.data.datasets[1].data = [550000, 600000, 620000, 647604];
+  trendChart.data.datasets[0].data = [1500000, 1600000, 1700000, 1842000];
+  trendChart.data.datasets[1].data = [900000, 950000, 1000000, 1047604];
+  trendChart.data.datasets[2].data = [600000, 650000, 700000, 794396];
   trendChart.update();
 }
 
-// Update state displacement chart when hovering over a state
-function updateStateDisplacementChart(stateName) {
-  if (!stateName || !stateDisplacementChart) return;
+// Update border crossing chart when hovering over a border point
+function updateBorderCrossingChart(pointName) {
+  if (!pointName || !borderCrossingChart) return;
   
-  // Highlight the selected state in the chart
-  const stateIndex = Object.keys(stateDisplacementData).indexOf(stateName);
+  // Highlight the selected border point in the chart
+  const pointIndex = Object.keys(borderCrossingData).indexOf(pointName);
   
-  // Update all background colors for both datasets
-  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
-  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  // Update all background colors for all datasets
+  const totalColors = Array(Object.keys(borderCrossingData).length).fill('#2A6FBB');
+  const inflowColors = Array(Object.keys(borderCrossingData).length).fill('#4CAF50');
+  const outflowColors = Array(Object.keys(borderCrossingData).length).fill('#FF671F');
   
-  if (stateIndex !== -1) {
-    idpsColors[stateIndex] = '#1a4d8c'; // Darker blue for highlight
-    returneesColors[stateIndex] = '#d94a1a'; // Darker orange for highlight
+  if (pointIndex !== -1) {
+    totalColors[pointIndex] = '#1a4d8c'; // Darker blue for highlight
+    inflowColors[pointIndex] = '#2e7d32'; // Darker green for highlight
+    outflowColors[pointIndex] = '#d94a1a'; // Darker orange for highlight
   }
   
-  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
-  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
-  stateDisplacementChart.update();
+  borderCrossingChart.data.datasets[0].backgroundColor = totalColors;
+  borderCrossingChart.data.datasets[1].backgroundColor = inflowColors;
+  borderCrossingChart.data.datasets[2].backgroundColor = outflowColors;
+  borderCrossingChart.update();
   
-  // Show x-axis label for the selected state
-  const labels = Object.keys(stateDisplacementData).map((state, i) => 
-    i === stateIndex ? state : ''
+  // Show x-axis label for the selected border point
+  const labels = Object.keys(borderCrossingData).map((point, i) => 
+    i === pointIndex ? point : ''
   );
   
-  stateDisplacementChart.options.scales.x.ticks.display = true;
-  stateDisplacementChart.data.labels = labels;
-  stateDisplacementChart.update();
+  borderCrossingChart.options.scales.x.ticks.display = true;
+  borderCrossingChart.data.labels = labels;
+  borderCrossingChart.update();
 }
 
-// Reset state displacement chart
-function resetStateDisplacementChart() {
-  if (!stateDisplacementChart) return;
+// Reset border crossing chart
+function resetBorderCrossingChart() {
+  if (!borderCrossingChart) return;
   
-  // Reset all background colors for both datasets
-  const idpsColors = Array(Object.keys(stateDisplacementData).length).fill('#2A6FBB');
-  const returneesColors = Array(Object.keys(stateDisplacementData).length).fill('#FF671F');
+  // Reset all background colors for all datasets
+  const totalColors = Array(Object.keys(borderCrossingData).length).fill('#2A6FBB');
+  const inflowColors = Array(Object.keys(borderCrossingData).length).fill('#4CAF50');
+  const outflowColors = Array(Object.keys(borderCrossingData).length).fill('#FF671F');
   
-  stateDisplacementChart.data.datasets[0].backgroundColor = idpsColors;
-  stateDisplacementChart.data.datasets[1].backgroundColor = returneesColors;
+  borderCrossingChart.data.datasets[0].backgroundColor = totalColors;
+  borderCrossingChart.data.datasets[1].backgroundColor = inflowColors;
+  borderCrossingChart.data.datasets[2].backgroundColor = outflowColors;
   
   // Hide x-axis labels
-  stateDisplacementChart.options.scales.x.ticks.display = false;
-  stateDisplacementChart.data.labels = Object.keys(stateDisplacementData);
-  stateDisplacementChart.update();
+  borderCrossingChart.options.scales.x.ticks.display = false;
+  borderCrossingChart.data.labels = Object.keys(borderCrossingData);
+  borderCrossingChart.update();
 }
 
 // Initialize the flow map
@@ -1757,19 +1743,23 @@ function initFlowMap() {
     }).addTo(flowMap);
     
     // State boundaries layer (for reference)
-    if (sudanStatesData) {
-      L.geoJSON(sudanStatesData, {
-        style: {
-          color: '#555',
-          weight: 1,
-          opacity: 0.7,
-          fillOpacity: 0.1
+    if (borderPointsData) {
+      L.geoJSON(borderPointsData, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: '#555',
+            color: '#fff',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.7
+          });
         }
       }).addTo(flowMap);
     }
     
     // Load flow data from CSV
-    Papa.parse('./data/IDPs_Pathway.csv', {
+    Papa.parse('./data/border_flows.csv', {
       download: true,
       header: true,
       dynamicTyping: true,
@@ -1849,21 +1839,22 @@ function processFlowData(data) {
       geometry: { 
         type: 'Point', 
         coordinates: [
-          parseFloat(datum.s_lon) || 0,
-          parseFloat(datum.s_lat) || 0
+          parseFloat(datum.origin_lon) || 0,
+          parseFloat(datum.origin_lat) || 0
         ] 
       },
       properties: {
-        s_state_id: datum.s_state_id,
-        s_State: datum.s_State,
-        s_lat: parseFloat(datum.s_lat) || 0,
-        s_lon: parseFloat(datum.s_lon) || 0,
-        e_locality_id: datum.e_locality_id,
-        e_locality: datum.e_locality,
-        e_lat: parseFloat(datum.e_lat) || 0,
-        e_lon: parseFloat(datum.e_lon) || 0,
-        e_Volume: parseFloat(datum.e_Volume) || 0,
-        main_needs: datum.main_needs
+        origin_id: datum.origin_id,
+        origin_name: datum.origin_name,
+        origin_lat: parseFloat(datum.origin_lat) || 0,
+        origin_lon: parseFloat(datum.origin_lon) || 0,
+        destination_id: datum.destination_id,
+        destination_name: datum.destination_name,
+        destination_lat: parseFloat(datum.destination_lat) || 0,
+        destination_lon: parseFloat(datum.destination_lon) || 0,
+        flow_volume: parseFloat(datum.flow_volume) || 0,
+        flow_direction: datum.flow_direction,
+        date: datum.date
       }
     }))
   };
@@ -1876,36 +1867,39 @@ function initializeFlowmapLayer(data) {
   // Create flowmap layer
   flowmapLayer = L.canvasFlowmapLayer(data, {
     originAndDestinationFieldIds: {
-      originUniqueIdField: 's_state_id',
-      originGeometry: { x: 's_lon', y: 's_lat' },
-      destinationUniqueIdField: 'e_locality_id',
-      destinationGeometry: { x: 'e_lon', y: 'e_lat' }
+      originUniqueIdField: 'origin_id',
+      originGeometry: { x: 'origin_lon', y: 'origin_lat' },
+      destinationUniqueIdField: 'destination_id',
+      destinationGeometry: { x: 'destination_lon', y: 'destination_lat' }
     },
     style: (feature) => {
       const baseRadius = 10;
-      const maxRadius = 6;
-      const volume = feature.properties.e_Volume || 0;
+      const maxRadius = 8;
+      const volume = feature.properties.flow_volume || 0;
       
       // Different styles for origin and destination points
       const radius = feature.properties.isOrigin
         ? baseRadius
         : Math.min(baseRadius + (volume / 5000), maxRadius);
       
+      // Color based on flow direction
+      const color = feature.properties.flow_direction === 'inbound' ? '#4CAF50' : '#FF671F';
+      
       return {
         radius: radius,
         weight: 1,
         color: '#fff',
-        fillColor: feature.properties.isOrigin ? '#ff671f' : '#418FDE',
+        fillColor: color,
         fillOpacity: feature.properties.isOrigin ? 0.8 : 0.7
       };
     },
     canvasBezierStyle: {
       type: 'classBreaks',
-      field: 'e_Volume',
+      field: 'flow_volume',
       classBreakInfos: [
         { 
           classMinValue: 1, 
-          classMaxValue: 80000, 
+          classMaxValue: 50000, 
           symbol: { 
             strokeStyle: '#ffb81c', 
             lineWidth: 0.5, 
@@ -1915,8 +1909,8 @@ function initializeFlowmapLayer(data) {
           } 
         },
         { 
-          classMinValue: 80001, 
-          classMaxValue: 1000000, 
+          classMinValue: 50001, 
+          classMaxValue: 200000, 
           symbol: { 
             strokeStyle: '#ff671f', 
             lineWidth: 1.5, 
@@ -1926,8 +1920,8 @@ function initializeFlowmapLayer(data) {
           } 
         },
         { 
-          classMinValue: 1000001, 
-          classMaxValue: 160000, 
+          classMinValue: 200001, 
+          classMaxValue: 500000, 
           symbol: { 
             strokeStyle: '#d22630', 
             lineWidth: 3, 
@@ -1971,8 +1965,8 @@ function initializeFlowmapLayer(data) {
     }
   });
   
-  // Select initial feature for path display (Khartoum)
-  flowmapLayer.selectFeaturesForPathDisplayById('s_state_id', "SD15", true, 'SELECTION_NEW');
+  // Select initial feature for path display (Tine Border)
+  flowmapLayer.selectFeaturesForPathDisplayById('origin_id', "B001", true, 'SELECTION_NEW');
   
   // Add flow legend
   const flowLegend = L.control({position: 'bottomright'});
@@ -1980,27 +1974,27 @@ function initializeFlowmapLayer(data) {
   flowLegend.onAdd = function() {
     const div = L.DomUtil.create('div', 'flow-legend');
     div.innerHTML = `
-      <h4>IDP Flow Volume</h4>
+      <h4>Border Flow Volume</h4>
       <div class="flow-legend-item">
         <div class="flow-legend-color" style="background:#ffb81c"></div>
-        <span>&lt; 80,000 IDPs</span>
+        <span>&lt; 50,000 people</span>
       </div>
       <div class="flow-legend-item">
         <div class="flow-legend-color" style="background:#ff671f"></div>
-        <span>80,000 - 1M IDPs</span>
+        <span>50,000 - 200K</span>
       </div>
       <div class="flow-legend-item">
         <div class="flow-legend-color" style="background:#d22630"></div>
-        <span>&gt; 1M IDPs</span>
+        <span>&gt; 200K</span>
       </div>
       <hr style="margin: 8px 0; border-color: #eee;">
       <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:#418FDE"></div>
-        <span>Destination Points</span>
+        <div class="flow-legend-color" style="background:#4CAF50"></div>
+        <span>Inbound Flow</span>
       </div>
       <div class="flow-legend-item">
-        <div class="flow-legend-color" style="background:#ff671f"></div>
-        <span>Origin Points</span>
+        <div class="flow-legend-color" style="background:#FF671F"></div>
+        <span>Outbound Flow</span>
       </div>
     `;
     return div;
@@ -2012,8 +2006,8 @@ function initializeFlowmapLayer(data) {
 // Add tooltip and popup to flow features
 function addFlowTooltip(feature, layer) {
   const tooltipContent = feature.properties.isOrigin
-    ? `Displacement From: ${feature.properties.s_State}`
-    : `Displacement To: ${feature.properties.e_locality}`;
+    ? `Flow Origin: ${feature.properties.origin_name}`
+    : `Flow Destination: ${feature.properties.destination_name}`;
   
   layer.bindTooltip(tooltipContent);
   layer.on('mouseover', () => layer.openTooltip());
@@ -2022,16 +2016,16 @@ function addFlowTooltip(feature, layer) {
   // Add popup with more detailed information
   const popupContent = feature.properties.isOrigin
     ? `<div style="min-width: 200px;">
-         <h4 style="margin: 0 0 10px; color: #2a5885;">Displacement Origin</h4>
-         <p><strong>State:</strong> ${feature.properties.s_State}</p>
-         <p><strong>Main Needs:</strong> ${feature.properties.main_needs || 'Not specified'}</p>
+         <h4 style="margin: 0 0 10px; color: #2a5885;">Flow Origin</h4>
+         <p><strong>Border Point:</strong> ${feature.properties.origin_name}</p>
+         <p><strong>Flow Direction:</strong> ${feature.properties.flow_direction === 'inbound' ? 'Inbound' : 'Outbound'}</p>
          <p><small>Click to view destination flows</small></p>
        </div>`
     : `<div style="min-width: 200px;">
-         <h4 style="margin: 0 0 10px; color: #2a5885;">Displacement Destination</h4>
-         <p><strong>Location:</strong> ${feature.properties.e_locality}</p>
-         <p><strong>Total Displaced Population:</strong> ${feature.properties.e_Volume ? feature.properties.e_Volume.toLocaleString() : 'N/A'}</p>
-         <p><strong>Main Needs:</strong> ${feature.properties.main_needs || 'Not specified'}</p>
+         <h4 style="margin: 0 0 10px; color: #2a5885;">Flow Destination</h4>
+         <p><strong>Border Point:</strong> ${feature.properties.destination_name}</p>
+         <p><strong>Total Flow Volume:</strong> ${feature.properties.flow_volume ? feature.properties.flow_volume.toLocaleString() : 'N/A'}</p>
+         <p><strong>Flow Direction:</strong> ${feature.properties.flow_direction === 'inbound' ? 'Inbound' : 'Outbound'}</p>
        </div>`;
   
   layer.bindPopup(popupContent);
@@ -2064,7 +2058,7 @@ function updatePointsButton() {
 }
 
 // Call the initialization function when the DOM is ready
-document.addEventListener('DOMContentLoaded', initPopulationDistributionMap);
+document.addEventListener('DOMContentLoaded', initBorderCrossingMap);
 </script>
 </body>
 </html>
